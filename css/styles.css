@@ -1,0 +1,47 @@
+body {
+  background-color: #E6F8F9;
+  margin: 0;
+}
+
+h1, h2 {
+  text-align: center;
+}
+
+img {
+  max-width: 100%;
+}
+
+.centered {
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.top-cloud {
+  position: absolute;
+  top: 30px;
+  right: 5%;
+}
+
+.bottom-cloud {
+  position: absolute;
+  top: 40%;
+  left: 5%;
+}
+
+#navbar {
+  width: 100vw;
+  background-color: #FFC60B;
+  position: fixed;
+  text-align: center;
+  z-index: 100;
+}
+
+#welcome-section {
+  background-color: purple;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  text-align: center;
+  padding-top: 75px;
+  padding-bottom: 0;
+}
