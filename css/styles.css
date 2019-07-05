@@ -1,5 +1,5 @@
 body {
-  background-color: #EEE;
+  background-color: #FFF;
   margin: 0;
 }
 
@@ -28,9 +28,9 @@ img {
   background-color: #222;
   color: #FFF;
   min-height: 100vh;
-  width: 100%;
-  position: relative;
-  text-align: center;
-  padding-top: 75px;
-  padding-bottom: 0;
+  min-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
