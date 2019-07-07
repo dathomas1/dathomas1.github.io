@@ -1,5 +1,7 @@
 body {
-  background-color: #FFF;
+  background-color: #eee;
+  font-family: "Open Sans", sans-serif;
+  line-height: 2em;
   margin: 0;
 }
 
@@ -12,25 +14,28 @@ img {
 }
 
 .centered {
-  width: fit-content;
   margin: 0 auto;
+  width: fit-content;
 }
 
 #navbar {
-  width: 100vw;
-  background-color: #AAA;
+  background-color: #aaa;
   position: fixed;
   text-align: center;
+  width: 100vw;
   z-index: 100;
 }
 
 #welcome-section {
-  background-color: #222;
-  color: #FFF;
-  min-height: 100vh;
-  min-width: 100%;
+  align-items: center;
+  background-image: linear-gradient(to bottom, rgba(30, 75, 200, 1), rgba(0, 0, 0, .5)),
+  url(img/background-image.png);
+  background-position: center;
+  background-size: cover;
+  color: #fff;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  min-height: 100vh;
+  min-width: 100%;
 }
