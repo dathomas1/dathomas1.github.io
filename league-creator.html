@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>FDF League Creator</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+
+    <!-- include source files here... -->
+    <script src="src/constants.js"></script>
+    <script src="src/commissioner-tables.js"></script>
+    <script src="src/helpers.js"></script>
+    <script src="src/leagues.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>FDF League Creator</h1>
+      <p>
+        This uses the rules explained at
+        <a href="https://www.fastdrivefootball.com/">Fast Drive Football</a> to
+        create a fictional league with FDF qualities. The team names and
+        conferences are left blank for you to print and fill in.
+      </p>
+      <p>Note, Franchise Points are currently not implement.</p>
+    </header>
+    <main>
+      <section class="settings">
+        <form id="league-form">
+          <fieldset>
+            <label for="league_size">
+              Number of Teams (min size is 8 teams)
+            </label>
+            <input type="number" id="league_size" min="8" value="32" />
+          </fieldset>
+          <button type="submit">Generate League</button>
+        </form>
+      </section>
+      <div id="js-output"></div>
+    </main>
+    <script src="src/main.js"></script>
+  </body>
+</html>
