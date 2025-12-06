@@ -171,7 +171,7 @@ class League {
     html += `<li><span class='st_title'>XP</span> ${team.XP}</li>`;
     html += '</ul></div></div>';
     html += "<div class='card_footer'><div class='franchise'><ul>";
-    html += `<li>Front Office Grade: ${team.front_office_grade}</li>`;
+    html += `<li>FO Grade: ${team.front_office_grade}</li>`;
     html += `<li>Owner Style: ${team.ownership_style}</li>`;
     html += `<li>Loyalty: ${team.ownership_loyalty}</li>`;
     html += `<li>#${team.id + 1}</li>`;
