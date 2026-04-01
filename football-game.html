@@ -3,14 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gridiron Strategy MVP - Threat DNA 2.0</title>
+    <title>Gridiron Strategy MVP - Tactical Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0f172a; color: white; font-family: ui-sans-serif, system-ui; overflow: hidden; }
-        canvas { border: 2px solid #334155; border-radius: 8px; background-color: #064e3b; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        body { background-color: #0f172a; color: white; font-family: ui-sans-serif, system-ui; overflow-x: hidden; }
+        canvas { 
+            border: 2px solid #334155; 
+            border-radius: 8px; 
+            background-color: #064e3b; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%; /* Responsive width */
+            height: auto;
+        }
         .play-btn { transition: all 0.2s; border: 1px solid #475569; position: relative; }
-        .play-btn:hover { transform: scale(1.02); background-color: #1e293b; border-color: #94a3b8; }
+        .play-btn:hover:not(:disabled) { transform: scale(1.02); background-color: #1e293b; border-color: #94a3b8; }
+        .play-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .selected-play { border: 2px solid #fbbf24 !important; background-color: #1e293b !important; }
+        
         .danger-badge { 
             position: absolute; top: -8px; right: -8px; 
             padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 900;
@@ -24,81 +33,109 @@
         }
         
         #play-log-panel {
-            position: fixed; top: 0; right: -400px; width: 400px; height: 100%;
+            position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px; height: 100%;
             background-color: #1e293b; border-left: 2px solid #334155;
             transition: right 0.3s ease-in-out; z-index: 100;
             display: flex; flex-direction: column;
             box-shadow: -10px 0 30px rgba(0,0,0,0.5);
         }
         #play-log-panel.open { right: 0; }
-        .log-entry { border-bottom: 1px solid #334155; padding: 12px; font-size: 11px; }
-        .log-entry:nth-child(odd) { background-color: #0f172a50; }
+        
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
         
         .result-highlight { color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+        
+        /* Loading Animation */
+        .loading-dots:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
+        }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center h-screen p-4">
+<body class="flex flex-col items-center p-4 min-h-screen">
 
+    <!-- Play Log -->
     <div id="play-log-panel">
         <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900">
             <h2 class="font-black italic text-amber-500 tracking-widest uppercase">Game Log</h2>
-            <button onclick="toggleLog()" class="text-slate-400 hover:text-white">✕</button>
+            <button onclick="toggleLog()" class="text-slate-400 hover:text-white p-2">✕</button>
         </div>
         <div id="log-content" class="overflow-y-auto flex-grow custom-scrollbar">
             <div class="p-8 text-center text-slate-500 italic text-sm">No plays recorded yet.</div>
         </div>
     </div>
 
-    <div class="w-full max-w-5xl flex justify-between items-end mb-4 bg-slate-900 p-4 rounded-lg border border-slate-700">
-        <div class="flex items-center gap-4">
+    <!-- Header / Scoreboard -->
+    <div class="w-full max-w-6xl flex flex-col md:flex-row justify-between items-center md:items-end mb-4 bg-slate-900 p-4 rounded-lg border border-slate-700 gap-4">
+        <div class="flex items-center gap-4 w-full md:w-auto">
             <div>
-                <h1 class="text-2xl font-black italic tracking-tighter text-slate-100">STRATEGY <span class="text-amber-500">TACTICAL</span></h1>
-                <p class="text-xs text-slate-400 uppercase font-bold" id="possession-ui">Possession 1 of 4</p>
+                <h1 class="text-xl md:text-2xl font-black italic tracking-tighter text-slate-100 uppercase">Strategy <span class="text-amber-500 text-sm md:text-lg">Tactical Engine</span></h1>
+                <p class="text-[10px] md:text-xs text-slate-400 uppercase font-bold" id="possession-ui">Possession 1 of 4</p>
             </div>
-            <button onclick="toggleLog()" class="bg-slate-800 border border-slate-600 px-3 py-1 rounded text-[10px] font-black uppercase text-amber-500 hover:bg-slate-700 transition-colors">
-                Play Log
+            <button onclick="toggleLog()" class="bg-slate-800 border border-slate-600 px-3 py-1 rounded text-[10px] font-black uppercase text-amber-500 hover:bg-slate-700 transition-colors ml-auto md:ml-0">
+                Log
             </button>
         </div>
-        <div class="text-right">
-            <p class="text-3xl font-mono font-bold text-amber-400" id="score-ui">HOME 0 - 0 AWAY</p>
-            <p class="text-sm font-bold text-slate-300" id="down-distance-ui">1st & 10 at Own 25</p>
+        <div class="text-center md:text-right w-full md:w-auto border-t md:border-t-0 border-slate-800 pt-2 md:pt-0">
+            <p class="text-2xl md:text-3xl font-mono font-bold text-amber-400" id="score-ui">HOME 0 - 0 AWAY</p>
+            <p class="text-xs md:text-sm font-bold text-slate-300" id="down-distance-ui">1st & 10 at Own 25</p>
         </div>
     </div>
 
-    <div class="relative">
-        <canvas id="gameCanvas" width="900" height="420"></canvas>
+    <!-- Field Area -->
+    <div class="relative w-full max-w-6xl">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Overlays -->
         <div id="pre-snap-overlay" class="hidden absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="bg-amber-500/10 border border-amber-500/50 backdrop-blur-sm px-6 py-2 rounded-full text-amber-400 font-black italic animate-pulse">
+            <div class="bg-amber-500/20 border border-amber-500/50 backdrop-blur-sm px-6 py-2 rounded-full text-amber-400 font-black italic animate-pulse text-sm md:text-base">
                 PRE-SNAP: AUDIBLE OR SNAP
             </div>
         </div>
+        <div id="calculating-overlay" class="hidden absolute inset-0 flex items-center justify-center bg-slate-900/40 backdrop-blur-[2px] rounded-lg">
+            <div class="flex flex-col items-center">
+                <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <div class="text-amber-400 font-black italic tracking-widest uppercase">Simulating Play</div>
+            </div>
+        </div>
     </div>
 
-    <div id="intel-bar" class="w-full max-w-5xl mt-2 min-h-12 py-2 flex flex-col items-center justify-center border border-slate-700 bg-slate-900/80 rounded">
-        <div id="intel-main" class="text-[12px] font-black text-amber-500 uppercase tracking-widest">CHOOSE FORMATION AND PLAY</div>
-        <div id="intel-sub" class="text-[10px] text-slate-400 font-mono mt-1"></div>
+    <!-- Intel Bar -->
+    <div id="intel-bar" class="w-full max-w-6xl mt-2 min-h-[60px] py-2 px-4 flex flex-col items-center justify-center border border-slate-700 bg-slate-900/80 rounded transition-all duration-300">
+        <div id="intel-main" class="text-[11px] md:text-[13px] font-black text-amber-500 uppercase tracking-widest text-center">CHOOSE FORMATION AND PLAY</div>
+        <div id="intel-sub" class="text-[9px] md:text-[11px] text-slate-400 font-mono mt-1 text-center opacity-80"></div>
     </div>
 
-    <div class="w-full max-w-5xl mt-4 grid grid-cols-4 gap-4">
-        <div class="bg-slate-800 p-3 rounded border border-slate-700">
-            <p class="text-[10px] uppercase text-slate-500 mb-2 font-bold">1. Formation</p>
-            <div id="personnel-list" class="flex flex-col gap-2">
-                <button onclick="setPersonnel('run')" id="btn-run" class="text-[10px] p-2 bg-slate-700 rounded font-bold border-l-4 border-emerald-500 text-left">I-FORMATION (HEAVY)</button>
-                <button onclick="setPersonnel('balanced')" id="btn-balanced" class="text-[10px] p-2 bg-slate-700 rounded font-bold text-left">SINGLEBACK (BALANCED)</button>
-                <button onclick="setPersonnel('pass')" id="btn-pass" class="text-[10px] p-2 bg-slate-700 rounded font-bold text-left">SHOTGUN (SPREAD)</button>
+    <!-- Controls -->
+    <div class="w-full max-w-6xl mt-4 grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <!-- Formation List -->
+        <div class="bg-slate-800 p-3 rounded border border-slate-700 h-fit">
+            <p class="text-[10px] uppercase text-slate-500 mb-2 font-bold tracking-widest">1. Personnel</p>
+            <div id="personnel-list" class="flex flex-row lg:flex-col gap-2 overflow-x-auto pb-1 lg:pb-0">
+                <button onclick="setPersonnel('run')" id="btn-run" class="flex-1 text-[10px] p-2 bg-slate-700 rounded font-bold border-l-4 border-emerald-500 text-left whitespace-nowrap">I-FORM (HEAVY)</button>
+                <button onclick="setPersonnel('balanced')" id="btn-balanced" class="flex-1 text-[10px] p-2 bg-slate-700 rounded font-bold text-left whitespace-nowrap">SINGLEBACK (BAL)</button>
+                <button onclick="setPersonnel('pass')" id="btn-pass" class="flex-1 text-[10px] p-2 bg-slate-700 rounded font-bold text-left whitespace-nowrap">SHOTGUN (SPREAD)</button>
             </div>
         </div>
 
-        <div class="col-span-3 bg-slate-800 p-3 rounded border border-slate-700 relative">
+        <!-- Playbook Grid -->
+        <div class="lg:col-span-3 bg-slate-800 p-3 rounded border border-slate-700 relative">
             <div class="flex justify-between items-center mb-2">
-                <p class="text-[10px] uppercase text-slate-500 font-bold">2. Playcall & Audibles</p>
-                <button id="snap-btn" onclick="snapBall()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] px-6 py-1 rounded font-black italic tracking-widest">
+                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-widest">2. Playcall & Audibles</p>
+                <button id="snap-btn" onclick="snapBall()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] px-6 py-2 rounded font-black italic tracking-widest transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-emerald-900/20">
                     SNAP BALL
                 </button>
             </div>
-            <div id="play-grid" class="grid grid-cols-4 gap-2"></div>
+            <div id="play-grid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
+                <!-- Plays generated via JS -->
+            </div>
         </div>
     </div>
 
@@ -106,6 +143,7 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
+        // Team and Play Data
         const team = {
             offense: { QB: 82, RBs: 78, OL: 81, TE: 75, WR: 84 },
             defense: { DL: 79, LBs: 82, CB: 78, Safety: 85, score: 0, archetype: 'balanced' }
@@ -143,61 +181,72 @@
             possession: 1, score: 0, fieldPos: 25, down: 1, distance: 10,
             currentPersonnel: 'balanced', selectedPlay: null, cpuDefPlay: null,
             phase: 'personnel', lastResult: 'SELECT FORMATION AND PLAY', 
-            lastTechnical: '',
-            playHistory: [], tagExperience: {}
+            lastTechnical: '', playHistory: [], tagExperience: {},
+            isCalculating: false
         };
 
-        const formationMap = { 'run': 'I-FORMATION', 'balanced': 'SINGLEBACK', 'pass': 'SHOTGUN' };
-
+        // UI Management
         function toggleLog() { document.getElementById('play-log-panel').classList.toggle('open'); }
 
         function updateLogUI() {
             const container = document.getElementById('log-content');
             if (state.playHistory.length === 0) return;
             container.innerHTML = state.playHistory.map((h, i) => `
-                <div class="log-entry">
-                    <div class="flex justify-between items-start mb-1">
+                <div class="log-entry p-3 border-b border-slate-700/50 text-[10px]">
+                    <div class="flex justify-between mb-1">
                         <span class="text-amber-500 font-black">#${i + 1} | ${h.down}&${h.distance}</span>
-                        <span class="text-slate-400 font-mono text-[9px] uppercase">Ball on ${h.fieldPos}</span>
+                        <span class="text-slate-400 font-mono">BALL ON ${h.fieldPos}</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 text-[10px]">
-                        <div>
-                            <p class="text-slate-500 uppercase font-bold text-[8px]">Offense</p>
-                            <p class="text-white">${offensivePlays.find(p => p.id === h.playId)?.name}</p>
+                    <div class="flex gap-2">
+                        <div class="flex-1 bg-slate-900/30 p-1 rounded">
+                            <p class="text-[8px] text-slate-500 uppercase font-bold">OFFENSE</p>
+                            <p class="text-white truncate">${offensivePlays.find(p => p.id === h.playId)?.name}</p>
                         </div>
-                        <div>
-                            <p class="text-slate-500 uppercase font-bold text-[8px]">Defense</p>
-                            <p class="text-red-400">${h.defPlayName}</p>
+                        <div class="flex-1 bg-slate-900/30 p-1 rounded">
+                            <p class="text-[8px] text-slate-500 uppercase font-bold">DEFENSE</p>
+                            <p class="text-red-400 truncate">${h.defPlayName}</p>
                         </div>
                     </div>
-                    <div class="mt-2 bg-slate-900/50 p-1.5 rounded border border-slate-700/50 text-emerald-400 font-bold italic">RESULT: ${h.outcomeText}</div>
-                    <div class="text-[8px] text-slate-500 mt-1 font-mono">${h.technical}</div>
+                    <div class="mt-2 text-emerald-400 font-bold italic border-l-2 border-emerald-500 pl-2">RESULT: ${h.outcomeText}</div>
                 </div>
             `).reverse().join('');
         }
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth * window.devicePixelRatio;
+            canvas.height = (container.clientWidth * 0.46) * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         function getExperience(tag) { return state.tagExperience[tag] || 0; }
 
         function getAnticipationLevel(tags) {
             const maxExp = Math.max(...tags.map(t => getExperience(t)));
-            if (maxExp >= 3) return 3; // READ
-            if (maxExp >= 1.5) return 2; // WATCH
+            if (maxExp >= 3) return 3; 
+            if (maxExp >= 1.5) return 2;
             return 0;
         }
 
         function setPersonnel(type) {
-            if (state.phase === 'results') return;
+            if (state.phase === 'results' || state.isCalculating) return;
             state.currentPersonnel = type;
             state.phase = 'personnel';
             state.cpuDefPlay = null; state.selectedPlay = null;
+            
             ['run', 'balanced', 'pass'].forEach(t => {
                 const btn = document.getElementById(`btn-${t}`);
                 btn.classList.toggle('border-l-4', t === type);
                 btn.classList.toggle('border-emerald-500', t === type);
             });
+            
             document.getElementById('snap-btn').classList.add('hidden');
             document.getElementById('pre-snap-overlay').classList.add('hidden');
             renderPlaybook();
+            updateUI();
         }
 
         function renderPlaybook() {
@@ -206,33 +255,26 @@
 
             offensivePlays.filter(p => p.formation.includes(state.currentPersonnel)).forEach(play => {
                 let finalSucc = play.success;
-                
                 let isExposed = false;
+
                 Object.keys(state.tagExperience).forEach(tag => {
                     if (getExperience(tag) >= 2 && TagConflictMap[tag]?.exposes.some(et => play.tags.includes(et))) {
                         isExposed = true;
                     }
                 });
 
-                if (isExposed) {
-                    finalSucc += 20;
-                } else {
+                if (isExposed) finalSucc += 20;
+                else {
                     const danger = getAnticipationLevel(play.tags);
                     if (danger >= 2) finalSucc -= (danger * 12);
                 }
 
-                if (play.isOption && play.tags.length >= 2) {
-                    const exp1 = getExperience(play.tags[0]);
-                    const exp2 = getExperience(play.tags[1]);
-                    if (Math.abs(exp1 - exp2) > 1) finalSucc += 15;
-                }
-
                 const btn = document.createElement('button');
                 btn.className = `play-btn flex flex-col items-start p-2 bg-slate-700 rounded font-bold uppercase border ${state.selectedPlay?.id === play.id ? 'selected-play' : 'border-slate-600'}`;
-                
-                if (isExposed) {
-                    btn.innerHTML += `<div class="exposed-badge">EXPOSED</div>`;
-                } else {
+                btn.disabled = state.isCalculating;
+
+                if (isExposed) btn.innerHTML += `<div class="exposed-badge">EXPOSED</div>`;
+                else {
                     const danger = getAnticipationLevel(play.tags);
                     if (danger >= 2) {
                         const color = danger === 3 ? 'bg-red-600' : 'bg-orange-500';
@@ -241,10 +283,10 @@
                 }
 
                 btn.innerHTML += `
-                    <span class="text-[10px] text-white">${play.name}</span>
-                    <div class="flex justify-between w-full mt-1">
-                        <span class="text-[8px] text-slate-400">${play.range[0]}-${play.range[1]} yds</span>
-                        <span class="text-[8px] ${finalSucc > play.success ? 'text-emerald-400' : (finalSucc < play.success ? 'text-red-400' : 'text-slate-300')}">${finalSucc}% Chance</span>
+                    <span class="text-[9px] md:text-[10px] text-white truncate w-full text-left">${play.name}</span>
+                    <div class="flex justify-between w-full mt-1 items-center">
+                        <span class="text-[8px] text-slate-400 font-mono">${play.range[0]}-${play.range[1]}Y</span>
+                        <span class="text-[8px] font-black ${finalSucc > play.success ? 'text-emerald-400' : (finalSucc < play.success ? 'text-red-400' : 'text-slate-300')}">${finalSucc}%</span>
                     </div>
                 `;
                 btn.onclick = () => selectPlay(play);
@@ -253,7 +295,7 @@
         }
 
         function selectPlay(play) {
-            if (state.phase === 'results') return;
+            if (state.phase === 'results' || state.isCalculating) return;
             const isAudible = state.phase === 'pre-snap';
             state.selectedPlay = play;
             
@@ -277,11 +319,23 @@
             updateUI();
         }
 
-        function snapBall() {
-            if (state.phase !== 'pre-snap') return;
-            state.phase = 'results';
+        async function snapBall() {
+            if (state.phase !== 'pre-snap' || state.isCalculating) return;
+            
+            // Set Loading State
+            state.isCalculating = true;
             document.getElementById('snap-btn').classList.add('hidden');
             document.getElementById('pre-snap-overlay').classList.add('hidden');
+            document.getElementById('calculating-overlay').classList.remove('hidden');
+            renderPlaybook();
+            updateUI();
+
+            // Simulate "Calculation" delay
+            await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 800));
+
+            state.isCalculating = false;
+            state.phase = 'results';
+            document.getElementById('calculating-overlay').classList.add('hidden');
             
             const play = state.selectedPlay;
             const cpu = state.cpuDefPlay;
@@ -304,7 +358,7 @@
                 if (Math.abs(exp1 - exp2) > 1) {
                     finalSuccess += 15;
                     schemeFooled = true;
-                    techDetails += " +15 OPTION-READ";
+                    techDetails += " +15 OPTION";
                 }
             }
 
@@ -325,20 +379,15 @@
 
             if (roll < finalSuccess) {
                 gain = Math.floor(Math.random() * (play.range[1] - play.range[0] + 1)) + play.range[0];
-                outcomeText = `GAINED ${gain}y`;
+                outcomeText = `GAINED ${gain}Y`;
                 if (schemeFooled) intelMsg = "DEFENSE FOOLED! ";
             } else {
                 if (roll > 96) { 
                     isTurnover = true; outcomeText = "TURNOVER!"; 
                 } else {
-                    if (isPass) {
-                        gain = 0;
-                        outcomeText = "INCOMPLETE";
-                    } else {
-                        gain = Math.floor(Math.random() * 3) - 1;
-                        outcomeText = `STUFFED (${gain}y)`;
-                    }
-                    if (schemeFooled) intelMsg = "DEFENSE FOOLED, BUT OFFENSE FAILS TO CAPITALIZE. ";
+                    if (isPass) { gain = 0; outcomeText = "INCOMPLETE"; }
+                    else { gain = Math.floor(Math.random() * 3) - 1; outcomeText = `STUFFED (${gain}Y)`; }
+                    if (schemeFooled) intelMsg = "SCHEME BEAT DEFENSE, BUT FAILED TO CAPITALIZE. ";
                 }
             }
 
@@ -359,11 +408,16 @@
                 if (state.fieldPos >= 100) { state.score += 7; setTimeout(endPossession, 3000); }
                 else updateDowns(gain);
             }
+            
             updateUI();
+            
             setTimeout(() => {
                 if (state.phase === 'results') {
-                    state.phase = 'personnel'; state.selectedPlay = null; state.cpuDefPlay = null;
-                    renderPlaybook(); updateUI();
+                    state.phase = 'personnel'; 
+                    state.selectedPlay = null; 
+                    state.cpuDefPlay = null;
+                    renderPlaybook(); 
+                    updateUI();
                 }
             }, 3000);
         }
@@ -389,33 +443,51 @@
             const main = document.getElementById('intel-main');
             const sub = document.getElementById('intel-sub');
             
-            main.innerText = state.lastResult;
-            sub.innerText = state.lastTechnical;
-
-            if (state.phase === 'results') {
-                main.classList.add('result-highlight');
-            } else {
+            if (state.isCalculating) {
+                main.innerHTML = `<span class="loading-dots">SIMULATING PLAY</span>`;
+                sub.innerText = "Processing strategic probabilities...";
                 main.classList.remove('result-highlight');
+            } else {
+                main.innerText = state.lastResult;
+                sub.innerText = state.lastTechnical;
+                if (state.phase === 'results') main.classList.add('result-highlight');
+                else main.classList.remove('result-highlight');
             }
         }
 
         function drawPlayer(x, y, color, isSquare) {
             ctx.fillStyle = color;
-            if (isSquare) ctx.fillRect(x - 7, y - 7, 14, 14);
-            else { ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill(); }
+            const s = canvas.width / 120; // Scale player size
+            if (isSquare) ctx.fillRect(x - s, y - s, s*2, s*2);
+            else { ctx.beginPath(); ctx.arc(x, y, s, 0, Math.PI * 2); ctx.fill(); }
         }
 
         function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Field dimensions relative to current width
+            const w = canvas.width / window.devicePixelRatio;
+            const h = canvas.height / window.devicePixelRatio;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            // Draw Grid
             ctx.strokeStyle = "rgba(255,255,255,0.05)";
-            for(let i=0; i<canvas.width; i+=45) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
+            const ydWidth = w / 20; // Show 20 yards in view
+            for(let i=0; i<w; i+=ydWidth) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
+            }
+            
+            // LOS
             ctx.strokeStyle = "#fbbf24"; ctx.lineWidth = 4;
-            ctx.beginPath(); ctx.moveTo(450, 0); ctx.lineTo(450, canvas.height); ctx.stroke();
-            for(let i=0; i<5; i++) drawPlayer(420, 140+(i*35), "#3b82f6", true);
-            drawPlayer(380, 210, "#3b82f6", true);
-            drawPlayer(340, 210, "#3b82f6", true);
-            for(let i=0; i<4; i++) drawPlayer(480, 155+(i*35), "#ef4444", false);
-            for(let i=0; i<3; i++) drawPlayer(530, 175+(i*40), "#ef4444", false);
+            ctx.beginPath(); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); ctx.stroke();
+
+            // Basic Player Positions (Static for now)
+            const centerX = w/2;
+            const centerY = h/2;
+            for(let i=0; i<5; i++) drawPlayer(centerX - 30, (centerY - 70) + (i*35), "#3b82f6", true);
+            drawPlayer(centerX - 70, centerY, "#3b82f6", true);
+            
+            for(let i=0; i<4; i++) drawPlayer(centerX + 30, (centerY - 55) + (i*35), "#ef4444", false);
+            
             requestAnimationFrame(draw);
         }
 
