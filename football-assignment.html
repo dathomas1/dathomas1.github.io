@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gridiron Strategy - Tactical Sequence Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: white; font-family: ui-sans-serif, system-ui; }
+        .play-btn { transition: all 0.2s; border: 1px solid #334155; position: relative; }
+        .play-btn:hover:not(:disabled) { background-color: #1e293b; border-color: #94a3b8; }
+        .selected-play { border: 2px solid #fbbf24 !important; background-color: #1e293b !important; }
+        
+        #timeline-container { height: 8px; background: #1e293b; border-radius: 4px; position: relative; overflow: hidden; border: 1px solid #334155; }
+        #timeline-progress { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); width: 0%; transition: width 0.1s linear; }
+        #deadline-marker { position: absolute; top: 0; width: 4px; height: 100%; background: #ef4444; box-shadow: 0 0 12px #ef4444; z-index: 10; }
+
+        .zone-tag { font-size: 8px; padding: 1px 4px; border-radius: 3px; background: #1e293b; color: #64748b; margin-right: 2px; text-transform: uppercase; border: 1px solid #334155; }
+        .option-highlight { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.4); }
+        .rating-input { background: #0f172a; border: 1px solid #334155; color: #fbbf24; text-align: center; width: 35px; border-radius: 4px; font-weight: 800; }
+        
+        @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .danger-pulse { animation: pulse-red 1s infinite; color: #ef4444; }
+    </style>
+</head>
+<body class="flex flex-col items-center p-4 min-h-screen">
+
+    <!-- Top Bar -->
+    <div class="w-full max-w-6xl bg-slate-900 p-4 rounded-xl border border-slate-700 mb-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-4">
+            <div class="p-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-black italic tracking-tighter uppercase leading-none">Gridiron <span class="text-amber-500">Chess</span></h1>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1" id="possession-ui">1st & 10 | Own 25</p>
+            </div>
+        </div>
+        <div id="game-clock" class="text-2xl font-mono font-bold text-amber-400">HOME 0 - 0 AWAY</div>
+    </div>
+
+    <!-- Simulation Viewport -->
+    <div id="simulation-viewport" class="w-full max-w-6xl aspect-video bg-slate-950 border-2 border-slate-800 rounded-2xl relative flex flex-col items-center justify-center p-8 shadow-2xl overflow-hidden">
+        <div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 50px 50px;"></div>
+        
+        <div id="sim-content" class="text-center z-10 w-full">
+            <div id="sim-main-text" class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-slate-800 transition-all duration-300">Awaiting Call</div>
+            <div id="sim-sub-text" class="text-xs md:text-sm font-mono text-slate-500 mt-6 uppercase tracking-[0.3em] h-8 max-w-2xl mx-auto leading-relaxed">Select a play to begin the sequence</div>
+        </div>
+        
+        <!-- Tactical Timeline -->
+        <div id="sim-timeline-box" class="absolute bottom-12 w-4/5 opacity-0 transition-all duration-500 transform translate-y-8">
+            <div class="flex justify-between text-[10px] font-black text-slate-500 mb-3 uppercase tracking-[0.2em]">
+                <span>Snap</span><span>Beat 1</span><span>Beat 2</span><span>Beat 3</span><span>Finish</span>
+            </div>
+            <div id="timeline-container">
+                <div id="timeline-progress"></div>
+                <div id="deadline-marker"></div>
+            </div>
+            <div class="flex justify-between mt-3">
+                <div class="text-[10px] text-amber-500 font-bold uppercase tracking-widest" id="read-status">Scanner: Offline</div>
+                <div class="text-[10px] text-red-500 font-black uppercase flex items-center gap-2" id="deadline-text">
+                    <span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span> Pocket Collapse Warning
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI Controls -->
+    <div class="w-full max-w-6xl mt-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 shadow-xl">
+            <p class="text-[10px] uppercase text-slate-500 mb-4 font-black tracking-widest border-b border-slate-800 pb-2">Personnel</p>
+            <div class="flex flex-col gap-2">
+                <button onclick="setPersonnel('heavy')" id="btn-heavy" class="personnel-btn text-[11px] p-3 bg-slate-800 rounded-lg font-black text-left hover:bg-slate-700 transition-all border border-slate-700">HEAVY (22 PERS)</button>
+                <button onclick="setPersonnel('balanced')" id="btn-balanced" class="personnel-btn text-[11px] p-3 bg-slate-800 rounded-lg font-black text-left hover:bg-slate-700 transition-all border border-slate-700">BALANCED (11 PERS)</button>
+                <button onclick="setPersonnel('pass')" id="btn-pass" class="personnel-btn text-[11px] p-3 bg-slate-800 rounded-lg font-black text-left hover:bg-slate-700 transition-all border border-slate-700">SPREAD (10 PERS)</button>
+            </div>
+        </div>
+
+        <div class="lg:col-span-3 bg-slate-900 p-5 rounded-xl border border-slate-700 shadow-xl relative">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
+                <p class="text-[10px] uppercase text-slate-500 font-black tracking-widest">Tactical Playbook (Multi-Beat Reads)</p>
+                <button id="snap-btn" onclick="snapBall()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] px-10 py-2.5 rounded-lg font-black italic tracking-[0.2em] transition-all shadow-lg shadow-emerald-900/40 transform hover:-translate-y-1 active:translate-y-0">SNAP BALL</button>
+            </div>
+            <div id="play-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+        </div>
+    </div>
+
+    <!-- Attribute Editor -->
+    <div class="w-full max-w-6xl mt-6 bg-slate-900 border border-slate-700 rounded-xl p-8 shadow-2xl mb-20">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+            <div>
+                <h4 class="text-[11px] font-black text-blue-400 uppercase mb-6 tracking-[0.3em] flex items-center gap-3">
+                    <span class="w-6 h-[2px] bg-blue-500"></span> Offense Attributes
+                </h4>
+                <div id="roster-offense" class="grid grid-cols-1 gap-3"></div>
+            </div>
+            <div>
+                <h4 class="text-[11px] font-black text-red-400 uppercase mb-6 tracking-[0.3em] flex items-center gap-3">
+                    <span class="w-6 h-[2px] bg-red-500"></span> Defense Logic
+                </h4>
+                <div id="roster-defense" class="grid grid-cols-1 gap-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const playDefinitions = {
+            triple_option: {
+                name: "Triple Option", type: "option", formation: ["heavy", "balanced"], isPlayAction: false,
+                sequence: [
+                    { beat: 1, readZone: "Interior", onVacated: "fb_dive", onOccupied: "continue" },
+                    { beat: 2, readZone: "Edge", onVacated: "qb_keep", onOccupied: "pitch_rb" }
+                ],
+                branches: {
+                    fb_dive: { name: "FB Dive", finishZone: "Interior", range: [3, 6], success: 65 },
+                    qb_keep: { name: "QB Keeper", finishZone: "Edge", range: [4, 12], success: 50 },
+                    pitch_rb: { name: "Pitch Out", finishZone: "Wide Alley", range: [0, 25], success: 40 }
+                }
+            },
+            rpo_bubble: {
+                name: "RPO Bubble", type: "option", formation: ["pass", "balanced"], isPlayAction: false,
+                sequence: [
+                    { beat: 1, readZone: "Hook/Curl", onVacated: "bubble_pass", onOccupied: "inside_zone" }
+                ],
+                branches: {
+                    bubble_pass: { name: "Bubble Screen", finishZone: "Out", range: [4, 9], success: 75 },
+                    inside_zone: { name: "Inside Zone", finishZone: "Interior", range: [3, 5], success: 55 }
+                }
+            },
+            pa_seam_shot: {
+                name: "PA Seam Burner", type: "pass", formation: ["pass", "balanced"], isPlayAction: true,
+                sequence: [
+                    { beat: 1, readZone: "Seam", onVacated: "deep_seam", onOccupied: "checkdown_out" }
+                ],
+                branches: {
+                    deep_seam: { name: "Vertical Seam", finishZone: "Seam", range: [18, 35], success: 35 },
+                    checkdown_out: { name: "Flare Out", finishZone: "Out", range: [2, 6], success: 80 }
+                }
+            },
+            smash_corner: {
+                name: "Smash Hi-Lo", type: "pass", formation: ["pass"], isPlayAction: false,
+                sequence: [
+                    { beat: 1, readZone: "Deep Flank", onVacated: "corner_route", onOccupied: "hitch_alley" }
+                ],
+                branches: {
+                    corner_route: { name: "High Corner", finishZone: "Deep Flank", range: [15, 25], success: 42 },
+                    hitch_alley: { name: "Low Hitch", finishZone: "Wide Alley", range: [5, 8], success: 70 }
+                }
+            }
+        };
+
+        const roster = {
+            offense: { "QB IQ": 4, "OL Strength": 3 },
+            defense: { "Pass Rush": 4, "Coverage IQ": 3 }
+        };
+
+        // THE DEFENSIVE BRAIN: Each player has a primary and secondary role
+       /*//DROP 4 (my edits)
+        const defenseRoster = [ 
+            { id: "SS", name: "Strong Safety", primary: "Seam", secondary: "Wide Alley", trigger: "" },
+            { id: "FS", name: "Free Safety", primary: "Deep Post", secondary: "Seam", trigger: "pass" },
+            { id: "MLB", name: "Mike LB", primary: "Interior", secondary: "Hook/Curl", trigger: "pass" },
+            { id: "SOLB", name: "Sam LB", primary: "Hook/Curl", secondary: "Edge", trigger: "run" },
+            { id: "CB1", name: "Field Corner", primary: "Deep Flank", secondary: "Out", trigger: "" }
+        ];*/
+
+        //RUN DOWN QUARTERS
+        const defenseRoster = [ 
+            { id: "SS", name: "Strong Safety", primary: "Seam", secondary: "Wide Alley", trigger: "run" },
+            { id: "FS", name: "Free Safety", primary: "Deep Post", secondary: "Seam", trigger: "pass" },
+            { id: "MLB", name: "Mike LB", primary: "Interior", secondary: "Hook/Curl", trigger: "pass" },
+            { id: "SOLB", name: "Sam LB", primary: "Hook/Curl", secondary: "Edge", trigger: "run" },
+            { id: "CB1", name: "Field Corner", primary: "Deep Flank", secondary: "Out", trigger: "pass" }
+        ];
+
+        let state = { fieldPos: 25, score: 0, currentPersonnel: 'balanced', selectedPlay: null, isSimulating: false };
+
+        function setPersonnel(type) {
+            state.currentPersonnel = type;
+            document.querySelectorAll('.personnel-btn').forEach(b => b.classList.remove('bg-amber-600', 'text-white'));
+            document.getElementById(`btn-${type}`).classList.add('bg-amber-600', 'text-white');
+            
+            const grid = document.getElementById('play-grid'); grid.innerHTML = '';
+            Object.values(playDefinitions).filter(p => p.formation.includes(type)).forEach(play => {
+                const btn = document.createElement('button');
+                btn.className = `play-btn p-4 rounded-xl text-left bg-slate-800 border border-slate-700 shadow-sm flex flex-col gap-2`;
+                btn.innerHTML = `
+                    <span class="text-[11px] font-black uppercase text-white tracking-widest">${play.name}</span>
+                    <div class="flex flex-wrap">${play.sequence.map(s => `<span class="zone-tag">${s.readZone}</span>`).join('')}</div>
+                `;
+                btn.onclick = () => { 
+                    if (state.isSimulating) return;
+                    state.selectedPlay = play; 
+                    document.querySelectorAll('.play-btn').forEach(b => b.classList.remove('selected-play'));
+                    btn.classList.add('selected-play');
+                    updateUI(); 
+                };
+                grid.appendChild(btn);
+            });
+            updateUI();
+        }
+
+        async function snapBall() {
+            if (state.isSimulating) return;
+            state.isSimulating = true;
+            const play = state.selectedPlay;
+            const mainText = document.getElementById('sim-main-text');
+            const subText = document.getElementById('sim-sub-text');
+            const timelineBox = document.getElementById('sim-timeline-box');
+            const progress = document.getElementById('timeline-progress');
+            const deadlineMarker = document.getElementById('deadline-marker');
+            const readStatus = document.getElementById('read-status');
+            
+            // 1. SET ENVIRONMENT
+            const pocketDeadline = Math.max(1.5, 2.8 + ((roster.offense["OL Strength"] - roster.defense["Pass Rush"]) * 0.5));
+            const keyDelay = Math.max(0.3, 1.2 - (roster.defense["Coverage IQ"] * 0.2)); // Higher IQ = Lower Delay
+            
+            deadlineMarker.style.left = `${(pocketDeadline / 4) * 100}%`;
+            timelineBox.style.opacity = "1";
+            timelineBox.style.transform = "translateY(0)";
+            progress.style.width = "0%";
+            
+            // Logic for the Key: If it's PA, defense sees "Run" for 1.5 beats
+            const actualKey = (play.type === 'option' || play.type === 'run') ? 'run' : 'pass';
+            const perceivedKey = play.isPlayAction ? 'run' : actualKey;
+
+            let currentBeat = 0;
+            let finalBranch = null;
+            let isSacked = false;
+
+            // 2. SEQUENCE EXECUTION
+            for (const step of play.sequence) {
+                mainText.innerText = `SCANNING ${step.readZone}`;
+                mainText.className = "text-3xl md:text-6xl font-black italic uppercase tracking-tighter text-amber-500 animate-pulse";
+                readStatus.innerText = `READ STATUS: ANALYZING ${step.readZone}...`;
+
+                const readLatency = Math.max(0.4, 1.4 - (roster.offense["QB IQ"] * 0.22));
+                const processingTime = 1000 * readLatency;
+
+                // Animate progress
+                progress.style.width = `${((currentBeat + readLatency) / 4) * 100}%`;
+                await new Promise(r => setTimeout(r, processingTime));
+                currentBeat += readLatency;
+
+                if (currentBeat > pocketDeadline) { isSacked = true; break; }
+
+                // 3. RESOLVE DEFENSE AT THIS BEAT
+                // Check which zones are occupied AFTER the key delay
+                let currentOccupied = [];
+                let keyActor = null;
+
+                defenseRoster.forEach(def => {
+                    const effectivelyRun = (currentBeat > keyDelay + (play.isPlayAction ? 0.8 : 0)) ? actualKey : perceivedKey;
+                    
+                    if (effectivelyRun === def.trigger) {
+                        currentOccupied.push(def.secondary);
+                        if (def.secondary === step.readZone) keyActor = def;
+                    } else {
+                        currentOccupied.push(def.primary);
+                        if (def.primary === step.readZone) keyActor = def;
+                    }
+                });
+
+                const isVacated = !currentOccupied.includes(step.readZone);
+                const decision = isVacated ? step.onVacated : step.onOccupied;
+
+                if (decision === "continue") {
+                    subText.innerText = `Reading... ${keyActor ? keyActor.id : 'Defender'} holding their zone.`;
+                } else {
+                    finalBranch = play.branches[decision];
+                    if (isVacated) {
+                        subText.innerText = keyActor 
+                            ? `${keyActor.id} BIT ON THE KEY! ${step.readZone} IS WIDE OPEN!`
+                            : `Zone ${step.readZone} found vacant! Taking ${finalBranch.name}!`;
+                    } else {
+                        subText.innerText = `${keyActor ? keyActor.id : 'Defense'} stayed home in ${step.readZone}. Going to ${finalBranch.name}.`;
+                    }
+                    break;
+                }
+            }
+
+            // 4. RESOLUTION
+            progress.style.width = "100%";
+            mainText.classList.remove('animate-pulse');
+
+            if (isSacked) {
+                mainText.innerText = "SACKED";
+                mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-red-600 danger-pulse";
+                subText.innerText = "Pressure was too fast for the progression. Drive stalled.";
+                state.fieldPos = Math.max(1, state.fieldPos - 7);
+            } else {
+                const branch = finalBranch || Object.values(play.branches)[0];
+                const gain = Math.floor(Math.random() * (branch.range[1] - branch.range[0] + 1) + branch.range[0]);
+                
+                mainText.innerText = `+${gain} YARDS`;
+                mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-emerald-500 option-highlight";
+                subText.innerText = `${branch.name} executed successfully on Beat ${currentBeat.toFixed(1)}.`;
+                state.fieldPos += gain;
+                if (state.fieldPos >= 100) { state.score += 7; state.fieldPos = 25; }
+            }
+
+            updateUI();
+            setTimeout(() => {
+                timelineBox.style.opacity = "0";
+                timelineBox.style.transform = "translateY(20px)";
+                state.selectedPlay = null;
+                state.isSimulating = false;
+                document.querySelectorAll('.play-btn').forEach(b => b.classList.remove('selected-play'));
+                updateUI();
+            }, 4500);
+        }
+
+        function updateUI() {
+            document.getElementById('snap-btn').classList.toggle('hidden', !state.selectedPlay || state.isSimulating);
+            document.getElementById('possession-ui').innerText = `1ST & 10 | YD ${state.fieldPos} | ${state.currentPersonnel.toUpperCase()}`;
+            document.getElementById('game-clock').innerText = `HOME ${state.score} - 0 AWAY`;
+            
+            if (!state.isSimulating) {
+                document.getElementById('sim-main-text').innerText = state.selectedPlay ? "READY" : "CHOOSE PLAY";
+                document.getElementById('sim-main-text').className = "text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-slate-800";
+                document.getElementById('sim-sub-text').innerText = state.selectedPlay ? `PLAYCALL: ${state.selectedPlay.name}` : "Awaiting tactical input from the sideline...";
+            }
+        }
+
+        function initRoster() {
+            const off = document.getElementById('roster-offense');
+            const def = document.getElementById('roster-defense');
+            [off, def].forEach(el => el.innerHTML = '');
+            
+            Object.entries(roster.offense).forEach(([pos, val]) => {
+                off.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-800/40 p-3 rounded-lg border border-slate-700/50">
+                        <span class="text-[11px] uppercase font-black text-slate-400">${pos}</span>
+                        <input type="number" min="1" max="5" value="${val}" class="rating-input" onchange="roster.offense['${pos}'] = parseInt(this.value)">
+                    </div>`;
+            });
+            Object.entries(roster.defense).forEach(([pos, val]) => {
+                def.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-800/40 p-3 rounded-lg border border-slate-700/50">
+                        <span class="text-[11px] uppercase font-black text-slate-400">${pos}</span>
+                        <input type="number" min="1" max="5" value="${val}" class="rating-input" onchange="roster.defense['${pos}'] = parseInt(this.value)">
+                    </div>`;
+            });
+        }
+
+        initRoster();
+        setPersonnel('balanced');
+    </script>
+</body>
+</html>
