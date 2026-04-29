@@ -106,6 +106,10 @@
 
     <script>
         const playDefinitions = {
+            jet_sweep: {
+                name: "Jet Sweep", type: "run", formation: ["pass", "balanced"], isPlayAction: false,
+                final_branch: { name: "Jet Sweep", finishZone: "Wide Alley", range: [0, 15], success: 55 }
+            },
             triple_option: {
                 name: "Triple Option", type: "option", formation: ["heavy", "balanced"], isPlayAction: false,
                 sequence: [
@@ -135,7 +139,7 @@
                 ],
                 branches: {
                     deep_seam: { name: "Vertical Seam", finishZone: "Seam", range: [18, 35], success: 35 },
-                    checkdown_out: { name: "Flare Out", finishZone: "Out", range: [2, 6], success: 80 }
+                    checkdown_out: { name: "Flare Out", finishZone: "Out", range: [2, 6], success: 90 }
                 }
             },
             smash_corner: {
@@ -145,34 +149,35 @@
                 ],
                 branches: {
                     corner_route: { name: "High Corner", finishZone: "Deep Flank", range: [15, 25], success: 42 },
-                    hitch_alley: { name: "Low Hitch", finishZone: "Wide Alley", range: [5, 8], success: 70 }
+                    hitch_alley: { name: "Low Hitch", finishZone: "Out", range: [5, 8], success: 80 }
                 }
             }
         };
 
         const roster = {
-            offense: { "QB IQ": 4, "OL Strength": 3 },
+            offense: { "QB IQ": 4, "OL Strength": 3, "Playmaker Skill": 3 },
             defense: { "Pass Rush": 4, "Coverage IQ": 3 }
         };
+        const defensePlayDefinitions = {
+            quarters: [ 
+                // Does this just need to change to run/pass responsibility
+                { id: "SS", name: "Strong Safety", primary: "Seam", secondary: "Wide Alley", trigger: "run" },
+                { id: "FS", name: "Free Safety", primary: "Deep Post", secondary: "", trigger: "" },
+                { id: "MLB", name: "Mike LB", primary: "Interior", secondary: "Hook/Curl", trigger: "pass" },
+                { id: "SOLB", name: "Sam LB", primary: "Hook/Curl", secondary: "Edge", trigger: "run" },
+                { id: "CB1", name: "Field Corner", primary: "Deep Flank", secondary: "Out", trigger: "run" }
+            ],
+            cover4_drop: [
+                { id: "SS", name: "Strong Safety", primary: "Seam", secondary: "", trigger: "" },
+                { id: "FS", name: "Free Safety", primary: "Deep Post", secondary: "", trigger: "" },
+                { id: "MLB", name: "Mike LB", primary: "Interior", secondary: "Hook/Curl", trigger: "pass" },
+                { id: "SOLB", name: "Sam LB", primary: "Hook/Curl", secondary: "Edge", trigger: "run" },
+                { id: "CB1", name: "Field Corner", primary: "Deep Flank", secondary: "", trigger: "" }
+            ]
+        }
+        const defenseRoster = defensePlayDefinitions.cover4_drop;
 
-        // THE DEFENSIVE BRAIN: Each player has a primary and secondary role
-       /*//DROP 4 (my edits)
-        const defenseRoster = [ 
-            { id: "SS", name: "Strong Safety", primary: "Seam", secondary: "Wide Alley", trigger: "" },
-            { id: "FS", name: "Free Safety", primary: "Deep Post", secondary: "Seam", trigger: "pass" },
-            { id: "MLB", name: "Mike LB", primary: "Interior", secondary: "Hook/Curl", trigger: "pass" },
-            { id: "SOLB", name: "Sam LB", primary: "Hook/Curl", secondary: "Edge", trigger: "run" },
-            { id: "CB1", name: "Field Corner", primary: "Deep Flank", secondary: "Out", trigger: "" }
-        ];*/
-
-        //RUN DOWN QUARTERS
-        const defenseRoster = [ 
-            { id: "SS", name: "Strong Safety", primary: "Seam", secondary: "Wide Alley", trigger: "run" },
-            { id: "FS", name: "Free Safety", primary: "Deep Post", secondary: "Seam", trigger: "pass" },
-            { id: "MLB", name: "Mike LB", primary: "Interior", secondary: "Hook/Curl", trigger: "pass" },
-            { id: "SOLB", name: "Sam LB", primary: "Hook/Curl", secondary: "Edge", trigger: "run" },
-            { id: "CB1", name: "Field Corner", primary: "Deep Flank", secondary: "Out", trigger: "run" }
-        ];
+        const VACANT_FAILURE = 95;
 
         let state = { fieldPos: 25, score: 0, currentPersonnel: 'balanced', selectedPlay: null, isSimulating: false };
 
@@ -183,11 +188,15 @@
             
             const grid = document.getElementById('play-grid'); grid.innerHTML = '';
             Object.values(playDefinitions).filter(p => p.formation.includes(type)).forEach(play => {
+                let zoneTags = '';
+                if (play.sequence) {
+                    zoneTags = play.sequence.map(s => `<span class="zone-tag">${s.readZone}</span>`).join('');
+                }
                 const btn = document.createElement('button');
                 btn.className = `play-btn p-4 rounded-xl text-left bg-slate-800 border border-slate-700 shadow-sm flex flex-col gap-2`;
                 btn.innerHTML = `
                     <span class="text-[11px] font-black uppercase text-white tracking-widest">${play.name}</span>
-                    <div class="flex flex-wrap">${play.sequence.map(s => `<span class="zone-tag">${s.readZone}</span>`).join('')}</div>
+                    <div class="flex flex-wrap">${zoneTags}</div>
                 `;
                 btn.onclick = () => { 
                     if (state.isSimulating) return;
@@ -212,16 +221,14 @@
             const deadlineMarker = document.getElementById('deadline-marker');
             const readStatus = document.getElementById('read-status');
             
-            // 1. SET ENVIRONMENT
             const pocketDeadline = Math.max(1.5, 2.8 + ((roster.offense["OL Strength"] - roster.defense["Pass Rush"]) * 0.5));
-            const keyDelay = Math.max(0.3, 1.2 - (roster.defense["Coverage IQ"] * 0.2)); // Higher IQ = Lower Delay
+            const keyDelay = Math.max(0.3, 1.2 - (roster.defense["Coverage IQ"] * 0.2)); 
             
             deadlineMarker.style.left = `${(pocketDeadline / 4) * 100}%`;
             timelineBox.style.opacity = "1";
             timelineBox.style.transform = "translateY(0)";
             progress.style.width = "0%";
             
-            // Logic for the Key: If it's PA, defense sees "Run" for 1.5 beats
             const actualKey = (play.type === 'option' || play.type === 'run') ? 'run' : 'pass';
             const perceivedKey = play.isPlayAction ? 'run' : actualKey;
 
@@ -229,74 +236,102 @@
             let finalBranch = null;
             let isSacked = false;
 
-            // 2. SEQUENCE EXECUTION
-            for (const step of play.sequence) {
-                mainText.innerText = `SCANNING ${step.readZone}`;
-                mainText.className = "text-3xl md:text-6xl font-black italic uppercase tracking-tighter text-amber-500 animate-pulse";
-                readStatus.innerText = `READ STATUS: ANALYZING ${step.readZone}...`;
+            // 1. SEQUENCE EXECUTION (READ PHASE)
+            if (play.sequence) {
+                
+                for (const step of play.sequence) {
+                    mainText.innerText = `SCANNING ${step.readZone}`;
+                    mainText.className = "text-3xl md:text-6xl font-black italic uppercase tracking-tighter text-amber-500 animate-pulse";
+                    readStatus.innerText = `READ STATUS: ANALYZING ${step.readZone}...`;
 
-                const readLatency = Math.max(0.4, 1.4 - (roster.offense["QB IQ"] * 0.22));
-                const processingTime = 1000 * readLatency;
+                    const readLatency = Math.max(0.4, 1.4 - (roster.offense["QB IQ"] * 0.22));
+                    const processingTime = 1000 * readLatency;
 
-                // Animate progress
-                progress.style.width = `${((currentBeat + readLatency) / 4) * 100}%`;
-                await new Promise(r => setTimeout(r, processingTime));
-                currentBeat += readLatency;
+                    progress.style.width = `${((currentBeat + readLatency) / 4) * 100}%`;
+                    await new Promise(r => setTimeout(r, processingTime));
+                    currentBeat += readLatency;
 
-                if (currentBeat > pocketDeadline) { isSacked = true; break; }
+                    if (currentBeat > pocketDeadline) { isSacked = true; break; }
 
-                // 3. RESOLVE DEFENSE AT THIS BEAT
-                // Check which zones are occupied AFTER the key delay
-                let currentOccupied = [];
-                let keyActor = null;
+                    let currentOccupied = [];
+                    defenseRoster.forEach(def => {
+                        const effectivelyRun = (currentBeat > keyDelay + (play.isPlayAction ? 0.4 : 0)) ? actualKey : perceivedKey;
+                        currentOccupied.push(effectivelyRun === def.trigger ? def.secondary : def.primary);
+                    });
 
-                defenseRoster.forEach(def => {
-                    const effectivelyRun = (currentBeat > keyDelay + (play.isPlayAction ? 0.4 : 0)) ? actualKey : perceivedKey;
-                    
-                    if (effectivelyRun === def.trigger) {
-                        currentOccupied.push(def.secondary);
-                        if (def.secondary === step.readZone) keyActor = def;
-                    } else {
-                        currentOccupied.push(def.primary);
-                        if (def.primary === step.readZone) keyActor = def;
+                    const isVacated = !currentOccupied.includes(step.readZone);
+                    const decision = isVacated ? step.onVacated : step.onOccupied;
+
+                    if (decision !== "continue") {
+                        finalBranch = play.branches[decision];
+                        subText.innerText = isVacated ? `Zone ${step.readZone} vacated! Taking ${finalBranch.name}!` : `Zone ${step.readZone} occupied. Dumping to ${finalBranch.name}.`;
+                        break;
                     }
-                });
-
-                const isVacated = !currentOccupied.includes(step.readZone);
-                const decision = isVacated ? step.onVacated : step.onOccupied;
-
-                if (decision === "continue") {
-                    subText.innerText = `Reading... ${keyActor ? keyActor.id : 'Defender'} holding their zone.`;
-                } else {
-                    finalBranch = play.branches[decision];
-                    if (isVacated) {
-                        subText.innerText = keyActor 
-                            ? `${keyActor.id} BIT ON THE KEY! ${step.readZone} IS WIDE OPEN!`
-                            : `Zone ${step.readZone} found vacant! Taking ${finalBranch.name}!`;
-                    } else {
-                        subText.innerText = `${keyActor ? keyActor.id : 'Defense'} stayed home in ${step.readZone}. Going to ${finalBranch.name}.`;
-                    }
-                    break;
                 }
+            } else {
+                finalBranch = play.final_branch;
+                readStatus.innerText = "NO READ STEP";
             }
 
-            // 4. RESOLUTION
+            // 2. RESOLUTION PHASE (FINISH CHECK)
             progress.style.width = "100%";
             mainText.classList.remove('animate-pulse');
 
             if (isSacked) {
                 mainText.innerText = "SACKED";
                 mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-red-600 danger-pulse";
-                subText.innerText = "Pressure was too fast for the progression. Drive stalled.";
+                subText.innerText = "Pressure broke through the line. Play aborted.";
                 state.fieldPos = Math.max(1, state.fieldPos - 7);
             } else {
                 const branch = finalBranch || Object.values(play.branches)[0];
-                const gain = Math.floor(Math.random() * (branch.range[1] - branch.range[0] + 1) + branch.range[0]);
                 
-                mainText.innerText = `+${gain} YARDS`;
-                mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-emerald-500 option-highlight";
-                subText.innerText = `${branch.name} executed successfully on Beat ${currentBeat.toFixed(1)}.`;
-                state.fieldPos += gain;
+                // Final occupancy check for finish zone
+                let finishOccupiedZones = [];
+                defenseRoster.forEach(def => {
+                    const effectivelyRun = (currentBeat > keyDelay + (play.isPlayAction ? 0.4 : 0)) ? actualKey : perceivedKey;
+                    finishOccupiedZones.push(effectivelyRun === def.trigger ? def.secondary : def.primary);
+                });
+
+                const finishZoneOccupied = finishOccupiedZones.includes(branch.finishZone);
+                
+                // Resolution Math
+                const skillDiff = roster.offense["Playmaker Skill"] - roster.defense["Coverage IQ"];
+                const successChance = branch.success + (skillDiff * 10);
+                const roll = Math.random() * 100;
+                
+                if (finishZoneOccupied) {
+                    // Contested Logic
+                    if (roll < 3) { // Turnover check
+                        mainText.innerText = play.type === 'pass' ? "INTERCEPTED" : "FUMBLE";
+                        mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-red-600 danger-pulse";
+                        subText.innerText = `Turnover in the ${branch.finishZone} zone! Defense takes over.`;
+                        state.fieldPos = 25; // Simple possession reset for now
+                    } else if (roll < (successChance / 2)) { // Skill win in occupied zone (Reduced odds)
+                        const gain = Math.floor(Math.random() * (branch.range[1] - branch.range[0] + 1) + branch.range[0]);
+                        mainText.innerText = `CONTESTED! +${gain}`;
+                        mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-amber-500 option-highlight";
+                        subText.innerText = `Playmaker wins in occupied ${branch.finishZone}!`;
+                        state.fieldPos += gain;
+                    } else {
+                        mainText.innerText = "NO GAIN";
+                        mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-slate-500";
+                        subText.innerText = play.type === 'pass' ? `Incomplete: Zone ${branch.finishZone} was swamped.` : `Stuffed: No room in the ${branch.finishZone} zone.`;
+                    }
+                } else {
+                    // Clean Win Logic
+                    if (roll < VACANT_FAILURE) {
+                        const gain = Math.floor(Math.random() * (branch.range[1] - branch.range[0] + 1) + branch.range[0]);
+                        mainText.innerText = `+${gain} YARDS`;
+                        mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-emerald-500 option-highlight";
+                        subText.innerText = `${branch.name} executed cleanly into vacant ${branch.finishZone}.`;
+                        state.fieldPos += gain;
+                    } else {
+                        mainText.innerText = play.type === 'pass' ? "INCOMPLETE" : "STUFFED";
+                        mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-slate-500";
+                        subText.innerText = `Execution failure despite vacant ${branch.finishZone}.`;
+                    }
+                }
+                
                 if (state.fieldPos >= 100) { state.score += 7; state.fieldPos = 25; }
             }
 
