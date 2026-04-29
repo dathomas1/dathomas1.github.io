@@ -251,7 +251,7 @@
                 let keyActor = null;
 
                 defenseRoster.forEach(def => {
-                    const effectivelyRun = (currentBeat > keyDelay + (play.isPlayAction ? 0.8 : 0)) ? actualKey : perceivedKey;
+                    const effectivelyRun = (currentBeat > keyDelay + (play.isPlayAction ? 0.4 : 0)) ? actualKey : perceivedKey;
                     
                     if (effectivelyRun === def.trigger) {
                         currentOccupied.push(def.secondary);
