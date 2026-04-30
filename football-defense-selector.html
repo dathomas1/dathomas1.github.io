@@ -116,8 +116,12 @@
     <script>
         const playDefinitions = {
             jet_sweep: {
-                name: "Jet Sweep", type: "run", formation: ["pass", "balanced"], isPlayAction: false, manBeaterBonus: 1,
+                name: "Jet Sweep", type: "run", formation: ["pass", "balanced"], isPlayAction: false, manBeaterBonus: 2,
                 final_branch: { name: "Jet Sweep", finishZone: "Wide Alley", range: [0, 15], success: 55 }
+            },
+            double_move: {
+                name: "Sluggo Shot", type: "pass", formation: ["pass"], isPlayAction: false, manBeaterBonus: 3,
+                final_branch: { name: "Slant-and-Go", finishZone: "Deep Post", range: [25, 50], success: 30, isBurnable: true }
             },
             triple_option: {
                 name: "Triple Option", type: "option", formation: ["heavy", "balanced"], isPlayAction: false, manBeaterBonus: -2,
@@ -270,11 +274,9 @@
 
                     let isVacated = false;
                     if (defense.isMan) {
-                        // MATCHUP ROLL: Skill + Bonus vs Defense IQ + RNG
                         const matchRoll = (roster.offense["Playmaker Skill"] + (play.manBeaterBonus || 0)) - (roster.defense["Coverage IQ"] + (Math.random() * 2));
                         isVacated = matchRoll > 0;
                     } else {
-                        // ZONE OCCUPANCY
                         let currentOccupied = defense.roster.map(def => {
                             const effectivelyRun = (currentBeat > keyDelay + (play.isPlayAction ? 0.4 : 0)) ? actualKey : perceivedKey;
                             return effectivelyRun === def.trigger ? def.secondary : def.primary;
@@ -293,8 +295,19 @@
                     }
                 }
             } else {
+                // DIRECT EXECUTION WITH INSTANT MATCHUP ROLL
                 finalBranch = play.final_branch;
                 readStatus.innerText = "DIRECT EXECUTION";
+                
+                if (defense.isMan) {
+                    mainText.innerText = "WINNING MATCH";
+                    mainText.className = "text-2xl md:text-5xl font-black italic uppercase tracking-tighter text-amber-500 animate-pulse";
+                    await new Promise(r => setTimeout(r, 800)); // Short dramatic beat for direct plays
+                    
+                    const matchRoll = (roster.offense["Playmaker Skill"] + (play.manBeaterBonus || 0)) - (roster.defense["Coverage IQ"] + (Math.random() * 2));
+                    winConditionMet = matchRoll > 0;
+                    subText.innerText = winConditionMet ? "Receiver won the 1v1 matchup!" : "Defender won the 1v1 matchup.";
+                }
             }
 
             // 2. RESOLUTION
@@ -308,26 +321,21 @@
                 const branch = finalBranch || Object.values(play.branches)[0];
                 const roll = Math.random() * 100;
                 
-                // Final Check Logic
-                const isContested = defense.isMan ? !winConditionMet : true; // In Man, if you didn't win read, it's contested.
-                // Re-check zone for Zone defense specifically at finish
-                let zoneOccupiedAtFinish = false;
-                if (!defense.isMan) {
-                    const finishOccupancy = defense.roster.map(def => {
-                        const effectivelyRun = (currentBeat > keyDelay + (play.isPlayAction ? 0.4 : 0)) ? actualKey : perceivedKey;
-                        return effectivelyRun === def.trigger ? def.secondary : def.primary;
-                    });
-                    zoneOccupiedAtFinish = finishOccupancy.includes(branch.finishZone);
+                let resolvedContested = false;
+                if (defense.isMan) {
+                    resolvedContested = !winConditionMet;
+                } else {
+                    const effectivelyRun = (currentBeat > keyDelay + (play.isPlayAction ? 0.4 : 0)) ? actualKey : perceivedKey;
+                    const finishOccupancy = defense.roster.map(def => effectivelyRun === def.trigger ? def.secondary : def.primary);
+                    resolvedContested = finishOccupancy.includes(branch.finishZone);
                 }
-
-                const resolvedContested = defense.isMan ? !winConditionMet : zoneOccupiedAtFinish;
 
                 if (resolvedContested) {
                     if (roll < 4) { // Turnover
                         mainText.innerText = play.type === 'pass' ? "INTERCEPTED" : "FUMBLE";
                         mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-red-600 danger-pulse";
                         state.fieldPos = 25;
-                    } else if (roll < (10 + roster.offense["Playmaker Skill"] * 10)) { // Skill Win
+                    } else if (roll < (roster.offense["Playmaker Skill"] * 10)) { // Skill Win
                         let gain = Math.floor(Math.random() * (branch.range[1] - branch.range[0]) + branch.range[0]);
                         mainText.innerText = `CONTESTED! +${gain}`;
                         mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-amber-500";
@@ -337,11 +345,11 @@
                         mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-slate-500";
                     }
                 } else {
-                    // Clean Win - Applying "Burn" Multiplier
+                    // Clean Win
                     let minGain = branch.range[0];
                     let maxGain = branch.range[1];
                     if (defense.isMan && winConditionMet && branch.isBurnable) {
-                        minGain = Math.max(minGain, 25); // Burn Multiplier: Floor of 25 yards
+                        minGain = Math.max(minGain, 25);
                         maxGain += 15;
                     }
                     const gain = Math.floor(Math.random() * (maxGain - minGain + 1) + minGain);
