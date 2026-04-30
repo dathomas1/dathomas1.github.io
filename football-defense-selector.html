@@ -192,7 +192,7 @@
 
         const roster = {
             offense: { "QB IQ": 4, "OL Strength": 3, "Playmaker Skill": 3 },
-            defense: { "Pass Rush": 4, "Coverage IQ": 3 }
+            defense: { "Pass Rush": 4, "Coverage IQ": 3, "Def Skill": 3 }
         };
 
         let state = { fieldPos: 25, score: 0, currentPersonnel: 'balanced', currentDefense: 'quarters', selectedPlay: null, isSimulating: false };
@@ -335,7 +335,7 @@
                         mainText.innerText = play.type === 'pass' ? "INTERCEPTED" : "FUMBLE";
                         mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-red-600 danger-pulse";
                         state.fieldPos = 25;
-                    } else if (roll < (roster.offense["Playmaker Skill"] * 10)) { // Skill Win
+                    } else if (roll < (25 + ((roster.offense["Playmaker Skill"] - roster.defense["Def Skill"]) * 10))) { // Skill Win
                         let gain = Math.floor(Math.random() * (branch.range[1] - branch.range[0]) + branch.range[0]);
                         mainText.innerText = `CONTESTED! +${gain}`;
                         mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-amber-500";
