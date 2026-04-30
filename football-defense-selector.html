@@ -81,6 +81,8 @@
                 <p class="text-[10px] uppercase text-slate-500 mb-4 font-black tracking-widest border-b border-slate-800 pb-2">Defensive Scheme</p>
                 <div class="flex flex-col gap-2">
                     <button onclick="setDefense('quarters')" id="def-quarters" class="defense-btn text-[11px] p-3 bg-slate-800 rounded-lg font-black text-left hover:bg-slate-700 transition-all border border-slate-700 uppercase">ZONE (QUARTERS)</button>
+                    <button onclick="setDefense('cover4')" id="def-cover4" class="defense-btn text-[11px] p-3 bg-slate-800 rounded-lg font-black text-left hover:bg-slate-700 transition-all border border-slate-700 uppercase">ZONE (COVER 4)</button>
+                    <button onclick="setDefense('cover3')" id="def-cover3" class="defense-btn text-[11px] p-3 bg-slate-800 rounded-lg font-black text-left hover:bg-slate-700 transition-all border border-slate-700 uppercase">ZONE (COVER 3)</button>
                     <button onclick="setDefense('cover1')" id="def-cover1" class="defense-btn text-[11px] p-3 bg-slate-800 rounded-lg font-black text-left hover:bg-slate-700 transition-all border border-slate-700 uppercase">MAN (COVER 1)</button>
                 </div>
             </div>
@@ -116,60 +118,62 @@
     <script>
         const playDefinitions = {
             jet_sweep: {
-                name: "Jet Sweep", type: "run", formation: ["pass", "balanced"], isPlayAction: false, manBeaterBonus: 2,
-                final_branch: { name: "Jet Sweep", finishZone: "Wide Alley", range: [0, 15], success: 55 }
+                name: "Jet Sweep", type: "run", actualKey: "outside", formation: ["pass", "balanced"], manBeaterBonus: 2,
+                final_branch: { name: "Jet Sweep", finishZone: "Wide Alley", range: [0, 15] }
+            },
+            counter_trey: {
+                name: "Counter Trey", type: "run", actualKey: "inside", initialVisual: "outside", formation: ["heavy", "balanced"], manBeaterBonus: 1,
+                final_branch: { name: "Counter Cutback", finishZone: "Edge", range: [4, 18] }
+            },
+            hb_draw: {
+                name: "HB Draw", type: "run", actualKey: "inside", initialVisual: "pass", formation: ["pass", "balanced"], manBeaterBonus: -1,
+                final_branch: { name: "Delayed Trap", finishZone: "Interior", range: [4, 14] }
+            },
+            wr_reverse: {
+                name: "WR Reverse", type: "run", actualKey: "outside", initialVisual: "outside", formation: ["pass"], manBeaterBonus: 3,
+                final_branch: { name: "Reverse Field", finishZone: "Wide Alley", range: [-5, 35] }
+            },
+            pa_seam_shot: {
+                name: "PA Seam Burner", type: "pass", actualKey: "pass", initialVisual: "inside", formation: ["pass", "balanced"], manBeaterBonus: 1,
+                sequence: [
+                    { beat: 1, readZone: "Seam", onVacated: "deep_seam", onOccupied: "checkdown_out" }
+                ],
+                branches: {
+                    deep_seam: { name: "Vertical Seam", finishZone: "Seam", range: [18, 35], isBurnable: true },
+                    checkdown_out: { name: "Flare Out", finishZone: "Out", range: [2, 6] }
+                }
             },
             double_move: {
-                name: "Sluggo Shot", type: "pass", formation: ["pass"], isPlayAction: false, manBeaterBonus: 3,
-                final_branch: { name: "Slant-and-Go", finishZone: "Deep Post", range: [25, 50], success: 30, isBurnable: true }
+                name: "Sluggo Shot", type: "pass", actualKey: "pass", formation: ["pass"], manBeaterBonus: 3,
+                final_branch: { name: "Slant-and-Go", finishZone: "Deep Post", range: [25, 50], isBurnable: true }
             },
             triple_option: {
-                name: "Triple Option", type: "option", formation: ["heavy", "balanced"], isPlayAction: false, manBeaterBonus: -2,
+                name: "Triple Option", type: "option", actualKey: "inside", formation: ["heavy", "balanced"], manBeaterBonus: -2,
                 sequence: [
                     { beat: 1, readZone: "Interior", onVacated: "fb_dive", onOccupied: "continue" },
                     { beat: 2, readZone: "Edge", onVacated: "qb_keep", onOccupied: "pitch_rb" }
                 ],
                 branches: {
-                    fb_dive: { name: "FB Dive", finishZone: "Interior", range: [3, 6], success: 65 },
-                    qb_keep: { name: "QB Keeper", finishZone: "Edge", range: [4, 12], success: 50 },
-                    pitch_rb: { name: "Pitch Out", finishZone: "Wide Alley", range: [0, 25], success: 40 }
+                    fb_dive: { name: "FB Dive", finishZone: "Interior", range: [3, 6] },
+                    qb_keep: { name: "QB Keeper", finishZone: "Edge", range: [4, 12] },
+                    pitch_rb: { name: "Pitch Out", finishZone: "Wide Alley", range: [0, 25] }
                 }
             },
             rpo_bubble: {
-                name: "RPO Bubble", type: "option", formation: ["pass", "balanced"], isPlayAction: false, manBeaterBonus: 0,
+                name: "RPO Bubble", type: "option", actualKey: "inside", formation: ["pass", "balanced"], manBeaterBonus: 0,
                 sequence: [
                     { beat: 1, readZone: "Hook/Curl", onVacated: "bubble_pass", onOccupied: "inside_zone" }
                 ],
                 branches: {
-                    bubble_pass: { name: "Bubble Screen", finishZone: "Out", range: [4, 9], success: 75 },
-                    inside_zone: { name: "Inside Zone", finishZone: "Interior", range: [3, 5], success: 55 }
-                }
-            },
-            pa_seam_shot: {
-                name: "PA Seam Burner", type: "pass", formation: ["pass", "balanced"], isPlayAction: true, manBeaterBonus: 0,
-                sequence: [
-                    { beat: 1, readZone: "Seam", onVacated: "deep_seam", onOccupied: "checkdown_out" }
-                ],
-                branches: {
-                    deep_seam: { name: "Vertical Seam", finishZone: "Seam", range: [18, 35], success: 35, isBurnable: true },
-                    checkdown_out: { name: "Flare Out", finishZone: "Out", range: [2, 6], success: 90 }
-                }
-            },
-            smash_corner: {
-                name: "Smash Hi-Lo", type: "pass", formation: ["pass"], isPlayAction: false, manBeaterBonus: 0,
-                sequence: [
-                    { beat: 1, readZone: "Deep Flank", onVacated: "corner_route", onOccupied: "hitch_alley" }
-                ],
-                branches: {
-                    corner_route: { name: "High Corner", finishZone: "Deep Flank", range: [15, 25], success: 42, isBurnable: true },
-                    hitch_alley: { name: "Low Hitch", finishZone: "Out", range: [5, 8], success: 80 }
+                    bubble_pass: { name: "Bubble Screen", finishZone: "Out", range: [4, 9] },
+                    inside_zone: { name: "Inside Zone", finishZone: "Interior", range: [3, 5] }
                 }
             }
         };
 
         const defensePlayDefinitions = {
             quarters: {
-                name: "Quarters", isMan: false,
+                name: "Quarters", isMan: false, // Covers all gaps against run and deep passes, but pa can trick
                 roster: [
                     { id: "SS", primary: "Seam", secondary: "Wide Alley", trigger: "run" },
                     { id: "FS", primary: "Deep Post", secondary: "", trigger: "" },
@@ -178,8 +182,28 @@
                     { id: "CB1", primary: "Deep Flank", secondary: "Out", trigger: "run" }
                 ]
             },
+            cover4: {
+                name: "Cover 4", isMan: false, // Covers deep passes, but OLB can get tricked
+                roster: [
+                    { id: "SS", primary: "Seam", secondary: "", trigger: "" },
+                    { id: "FS", primary: "Deep Post", secondary: "", trigger: "" },
+                    { id: "MLB", primary: "Hook/Curl", secondary: "Interior", trigger: "run" },
+                    { id: "SOLB", primary: "Wide Alley", secondary: "Edge", trigger: "inside" },
+                    { id: "CB1", primary: "Deep Flank", secondary: "Out", trigger: "run" }
+                ]
+            },
+            cover3: {
+                name: "Cover 3", isMan: false, // Balanced
+                roster: [
+                    { id: "SS", primary: "Out", secondary: "Wide Alley", trigger: "run" },
+                    { id: "FS", primary: "Deep Post", secondary: "", trigger: "" },
+                    { id: "MLB", primary: "Hook/Curl", secondary: "Interior", trigger: "run" },
+                    { id: "SOLB", primary: "Hook/Curl", secondary: "Edge", trigger: "run" },
+                    { id: "CB1", primary: "Deep Flank", secondary: "", trigger: "" }
+                ]
+            },
             cover1: {
-                name: "Cover 1", isMan: true,
+                name: "Cover 1", isMan: true, // needs more logic
                 roster: [
                     { id: "SS", primary: "Seam", secondary: "Seam", trigger: "pass" },
                     { id: "FS", primary: "Deep Post", secondary: "Deep Post", trigger: "" },
@@ -249,9 +273,6 @@
             deadlineMarker.style.left = `${(pocketDeadline / 4) * 100}%`;
             timelineBox.style.opacity = "1"; timelineBox.style.transform = "translateY(0)"; progress.style.width = "0%";
             
-            const actualKey = (play.type === 'option' || play.type === 'run') ? 'run' : 'pass';
-            const perceivedKey = play.isPlayAction ? 'run' : actualKey;
-
             let currentBeat = 0;
             let finalBranch = null;
             let isSacked = false;
@@ -260,10 +281,10 @@
             // 1. SEQUENCE EXECUTION (READ PHASE)
             if (play.sequence) {
                 for (const step of play.sequence) {
-                    const scanMsg = defense.isMan ? `WINNING MATCHUP: ${step.readZone}` : `SCANNING ${step.readZone}`;
+                    const scanMsg = defense.isMan ? `MATCHUP: ${step.readZone}` : `SCANNING ${step.readZone}`;
                     mainText.innerText = scanMsg;
                     mainText.className = "text-2xl md:text-5xl font-black italic uppercase tracking-tighter text-amber-500 animate-pulse";
-                    readStatus.innerText = `READ STATUS: ${defense.isMan ? 'ISOLATING 1v1' : 'SEARCHING VACANCY'}...`;
+                    readStatus.innerText = `READ STATUS: ${defense.isMan ? 'ISOLATING WR' : 'CHECKING COVERAGE'}...`;
 
                     const readLatency = Math.max(0.4, 1.4 - (roster.offense["QB IQ"] * 0.22));
                     progress.style.width = `${((currentBeat + readLatency) / 4) * 100}%`;
@@ -277,9 +298,11 @@
                         const matchRoll = (roster.offense["Playmaker Skill"] + (play.manBeaterBonus || 0)) - (roster.defense["Coverage IQ"] + (Math.random() * 2));
                         isVacated = matchRoll > 0;
                     } else {
+                        // Generalized Visual Logic
+                        const visualKey = (currentBeat < keyDelay) && play.initialVisual ? play.initialVisual : play.actualKey;
                         let currentOccupied = defense.roster.map(def => {
-                            const effectivelyRun = (currentBeat > keyDelay + (play.isPlayAction ? 0.4 : 0)) ? actualKey : perceivedKey;
-                            return effectivelyRun === def.trigger ? def.secondary : def.primary;
+                            const triggerMatch = (visualKey === def.trigger) || (def.trigger === 'run' && (visualKey === 'inside' || visualKey === 'outside'));
+                            return triggerMatch ? def.secondary : def.primary;
                         });
                         isVacated = !currentOccupied.includes(step.readZone);
                     }
@@ -288,25 +311,19 @@
                     if (decision !== "continue") {
                         finalBranch = play.branches[decision];
                         winConditionMet = isVacated;
-                        subText.innerText = isVacated ? 
-                            (defense.isMan ? "Receiver beat the Man coverage!" : `Zone ${step.readZone} vacated!`) : 
-                            (defense.isMan ? "Receiver blanketed by Man coverage." : `Zone ${step.readZone} occupied.`);
+                        subText.innerText = isVacated ? "Target window found!" : "Coverage held firm.";
                         break;
                     }
                 }
             } else {
-                // DIRECT EXECUTION WITH INSTANT MATCHUP ROLL
+                // DIRECT EXECUTION
                 finalBranch = play.final_branch;
-                readStatus.innerText = "DIRECT EXECUTION";
-                
                 if (defense.isMan) {
-                    mainText.innerText = "WINNING MATCH";
-                    mainText.className = "text-2xl md:text-5xl font-black italic uppercase tracking-tighter text-amber-500 animate-pulse";
-                    await new Promise(r => setTimeout(r, 800)); // Short dramatic beat for direct plays
-                    
+                    mainText.innerText = "MATCHUP ROLL";
+                    mainText.className = "text-2xl md:text-5xl font-black italic uppercase text-amber-500 animate-pulse";
+                    await new Promise(r => setTimeout(r, 800));
                     const matchRoll = (roster.offense["Playmaker Skill"] + (play.manBeaterBonus || 0)) - (roster.defense["Coverage IQ"] + (Math.random() * 2));
                     winConditionMet = matchRoll > 0;
-                    subText.innerText = winConditionMet ? "Receiver won the 1v1 matchup!" : "Defender won the 1v1 matchup.";
                 }
             }
 
@@ -318,24 +335,27 @@
                 mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-red-600 danger-pulse";
                 state.fieldPos = Math.max(1, state.fieldPos - 7);
             } else {
-                const branch = finalBranch || Object.values(play.branches)[0];
+                const branch = finalBranch || Object.values(play.branches || { d: play.final_branch })[0];
                 const roll = Math.random() * 100;
                 
                 let resolvedContested = false;
                 if (defense.isMan) {
                     resolvedContested = !winConditionMet;
                 } else {
-                    const effectivelyRun = (currentBeat > keyDelay + (play.isPlayAction ? 0.4 : 0)) ? actualKey : perceivedKey;
-                    const finishOccupancy = defense.roster.map(def => effectivelyRun === def.trigger ? def.secondary : def.primary);
+                    const finalVisual = (currentBeat < keyDelay) && play.initialVisual ? play.initialVisual : play.actualKey;
+                    const finishOccupancy = defense.roster.map(def => {
+                        const triggerMatch = (finalVisual === def.trigger) || (def.trigger === 'run' && (finalVisual === 'inside' || finalVisual === 'outside'));
+                        return triggerMatch ? def.secondary : def.primary;
+                    });
                     resolvedContested = finishOccupancy.includes(branch.finishZone);
                 }
 
                 if (resolvedContested) {
-                    if (roll < 4) { // Turnover
-                        mainText.innerText = play.type === 'pass' ? "INTERCEPTED" : "FUMBLE";
+                    if (roll < 4) {
+                        mainText.innerText = "TURNOVER";
                         mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-red-600 danger-pulse";
                         state.fieldPos = 25;
-                    } else if (roll < (25 + ((roster.offense["Playmaker Skill"] - roster.defense["Def Skill"]) * 10))) { // Skill Win
+                    } else if (roll < (25 + ((roster.offense["Playmaker Skill"] - roster.defense["Def Skill"]) * 10))) {
                         let gain = Math.floor(Math.random() * (branch.range[1] - branch.range[0]) + branch.range[0]);
                         mainText.innerText = `CONTESTED! +${gain}`;
                         mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-amber-500";
@@ -345,7 +365,6 @@
                         mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-slate-500";
                     }
                 } else {
-                    // Clean Win
                     let minGain = branch.range[0];
                     let maxGain = branch.range[1];
                     if (defense.isMan && winConditionMet && branch.isBurnable) {
@@ -353,7 +372,7 @@
                         maxGain += 15;
                     }
                     const gain = Math.floor(Math.random() * (maxGain - minGain + 1) + minGain);
-                    mainText.innerText = `+${gain} YARDS`;
+                    mainText.innerText = gain < 0 ? `${gain} YARDS` : `+${gain} YARDS`;
                     mainText.className = "text-5xl md:text-7xl font-black italic uppercase text-emerald-500 option-highlight";
                     state.fieldPos += gain;
                 }
