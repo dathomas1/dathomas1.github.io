@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFB Economics & Realignment Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #e2e8f0; }
+        .log-container::-webkit-scrollbar { width: 8px; }
+        .log-container::-webkit-scrollbar-track { background: #1e293b; }
+        .log-container::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        .school-card { transition: all 0.2s ease-in-out; }
+        .school-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .log-enter { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Header & Controls -->
+    <header class="bg-slate-900 border-b border-slate-700 p-4 flex justify-between items-center shadow-md shrink-0">
+        <div>
+            <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+                <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                CFB Realignment Sim
+            </h1>
+            <p class="text-sm text-slate-400">Year: <span id="current-year" class="font-bold text-orange-400">2024</span> | Agent-Based Economics Model</p>
+        </div>
+        <div class="flex gap-3">
+            <button id="btn-step" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded font-medium transition-colors">Step 1 Year</button>
+            <button id="btn-play" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded font-medium transition-colors shadow-lg shadow-orange-600/20">Auto-Play</button>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-1 flex overflow-hidden p-4 gap-4">
+        
+        <!-- Conferences View (Left) -->
+        <div class="flex-1 overflow-y-auto pr-2" id="conferences-container">
+            <!-- Rendered via JS -->
+        </div>
+
+        <!-- Right Panel: Logs & Details -->
+        <div class="w-1/3 flex flex-col gap-4 shrink-0">
+            
+            <!-- Global Stats -->
+            <div class="bg-slate-800 rounded-lg p-4 border border-slate-700 shadow-sm shrink-0">
+                <h2 class="text-lg font-semibold text-slate-200 border-b border-slate-700 pb-2 mb-3">Global Market</h2>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p class="text-slate-400">Total Media Value</p>
+                        <p class="font-mono text-lg text-green-400" id="stat-total-media">$0</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400">Avg School Revenue</p>
+                        <p class="font-mono text-lg text-blue-400" id="stat-avg-rev">$0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Log -->
+            <div class="bg-slate-800 rounded-lg border border-slate-700 shadow-sm flex-1 flex flex-col overflow-hidden">
+                <div class="p-3 border-b border-slate-700 bg-slate-800 shrink-0 flex justify-between items-center">
+                    <h2 class="text-sm font-semibold text-slate-200">Simulation Logs</h2>
+                    <select id="log-filter" class="bg-slate-700 text-xs text-slate-200 rounded p-1 border-none focus:ring-0">
+                        <option value="all">All Events</option>
+                        <option value="realignment">Realignment Only</option>
+                        <option value="coach">Coaching Changes</option>
+                    </select>
+                </div>
+                <div class="flex-1 overflow-y-auto p-3 space-y-2 log-container" id="event-logs">
+                    <!-- Logs go here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- UTILITIES ---
+        const formatMoney = (num) => '$' + (num / 1000000).toFixed(1) + 'M';
+        const randomInRange = (min, max) => Math.random() * (max - min) + min;
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+        const distance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+
+        // --- CLASSES ---
+
+        class Coordinator {
+            constructor() {
+                this.sigma = randomInRange(0.4, 0.6); // Rookie base stats
+            }
+            grow(mentorship, teamWins) {
+                // Growth based on HC's mentorship and winning
+                let growth = (mentorship * 0.05) + (teamWins > 8 ? 0.02 : 0);
+                this.sigma = Math.min(0.95, this.sigma + growth);
+            }
+        }
+
+        class Coach {
+            constructor(tier) {
+                this.id = generateId();
+                // Eta: Efficiency (winning with less money)
+                // Rho: Brand Power (boosts prestige/recruiting)
+                // Mentorship: Growth rate for coordinators
+                if (tier === 'elite') {
+                    this.eta = randomInRange(0.8, 1.2);
+                    this.rho = randomInRange(0.9, 1.2);
+                    this.mentorship = randomInRange(0.7, 1.0);
+                } else if (tier === 'mid') {
+                    this.eta = randomInRange(0.9, 1.3); // Mid tier often overachieves with less
+                    this.rho = randomInRange(0.6, 0.9);
+                    this.mentorship = randomInRange(0.4, 0.8);
+                } else {
+                    this.eta = randomInRange(0.6, 1.0);
+                    this.rho = randomInRange(0.5, 0.8);
+                    this.mentorship = randomInRange(0.2, 0.6);
+                }
+                this.coordO = new Coordinator();
+                this.coordD = new Coordinator();
+            }
+
+            getStaffMultiplier() {
+                return this.eta * ((this.coordO.sigma + this.coordD.sigma) / 2);
+            }
+        }
+
+        class School {
+            constructor(name, households, basePrestige, x, y, initialTier) {
+                this.id = generateId();
+                this.name = name;
+                this.households = households; // Base TV market
+                this.prestige = basePrestige; // P
+                this.x = x;
+                this.y = y;
+                
+                this.conferenceId = null;
+                this.coach = new Coach(initialTier);
+                
+                this.winsLast3Years = [6, 6, 6];
+                this.brandValue = 0; // V
+                this.currentRevenue = 0;
+            }
+
+            updateBrandValue() {
+                // V = (H * P) + Recent Wins weighted
+                let winFactor = (this.winsLast3Years[0]*1.5) + (this.winsLast3Years[1]*1.0) + (this.winsLast3Years[2]*0.5);
+                this.brandValue = (this.households * this.prestige * 100) + (winFactor * 500000);
+            }
+
+            getRecentWinAvg() {
+                return this.winsLast3Years.reduce((a, b) => a + b) / 3;
+            }
+        }
+
+        class Conference {
+            constructor(name, prestigeMultiplier, isPower) {
+                this.id = generateId();
+                this.name = name;
+                this.schools = [];
+                this.prestigeMultiplier = prestigeMultiplier;
+                this.isPower = isPower;
+                
+                this.contractYearsLeft = Math.floor(randomInRange(3, 8));
+                this.annualPayoutPerSchool = 0;
+                this.recentDepartures = 0;
+                
+                this.centroidX = 0;
+                this.centroidY = 0;
+            }
+
+            recalculateCentroid() {
+                if (this.schools.length === 0) return;
+                let sumX = 0, sumY = 0;
+                this.schools.forEach(s => { sumX += s.x; sumY += s.y; });
+                this.centroidX = sumX / this.schools.length;
+                this.centroidY = sumY / this.schools.length;
+            }
+
+            renegotiateMediaDeal() {
+                if (this.schools.length === 0) {
+                    this.annualPayoutPerSchool = 0;
+                    return;
+                }
+                
+                // Aggregate Value = Sum of (Households * Prestige * Brand Value)
+                let totalPool = 0;
+                this.schools.forEach(s => {
+                    totalPool += s.brandValue * this.prestigeMultiplier;
+                });
+
+                // Baseline TV money (Market factor)
+                const marketMultiplier = 1.2; 
+                let totalDealValue = totalPool * marketMultiplier;
+
+                this.annualPayoutPerSchool = totalDealValue / this.schools.length;
+                this.contractYearsLeft = 7; // New 7 year deal
+                this.recentDepartures = 0; // Reset anxiety
+            }
+
+            evaluateCandidate(school) {
+                // Would adding this school increase the payout per school?
+                let currentPool = this.annualPayoutPerSchool * this.schools.length;
+                let potentialNewPool = currentPool + (school.brandValue * this.prestigeMultiplier * 1.2);
+                let potentialPayout = potentialNewPool / (this.schools.length + 1);
+                
+                return potentialPayout > this.annualPayoutPerSchool;
+            }
+        }
+
+        // --- SIMULATION ENGINE ---
+
+        class Simulation {
+            constructor() {
+                this.year = 2024;
+                this.conferences = [];
+                this.allSchools = [];
+                this.logs = [];
+                this.isPlaying = false;
+                this.intervalId = null;
+
+                this.setupWorld();
+            }
+
+            setupWorld() {
+                // Initialize Conferences
+                const cB1G = new Conference("The Big Alliance", 1.5, true);
+                const cSEC = new Conference("Southern Elite", 1.5, true);
+                const cB12 = new Conference("Heartland 12", 1.2, true);
+                const cACC = new Conference("Coastal Conf", 1.15, true);
+                const cMWC = new Conference("Mountain West", 0.7, false);
+                const cMAC = new Conference("Mid-Americana", 0.6, false);
+
+                this.conferences = [cB1G, cSEC, cB12, cACC, cMWC, cMAC];
+
+                // Generator Helper
+                const createSchools = (count, conf, baseH, baseP, tier, xRange, yRange) => {
+                    for(let i=0; i<count; i++) {
+                        let name = conf.name.split(' ')[0] + " State " + (i+1);
+                        if (i===0) name = conf.name.split(' ')[0] + " U"; // Anchor school
+                        let h = randomInRange(baseH * 0.8, baseH * 1.2);
+                        let p = randomInRange(baseP * 0.8, baseP * 1.2);
+                        let x = randomInRange(xRange[0], xRange[1]);
+                        let y = randomInRange(yRange[0], yRange[1]);
+                        
+                        let s = new School(name, h, p, x, y, tier);
+                        s.conferenceId = conf.id;
+                        s.updateBrandValue();
+                        conf.schools.push(s);
+                        this.allSchools.push(s);
+                    }
+                };
+
+                // Populate Conferences (approximating regions x:0-100(W-E), y:0-100(N-S))
+                createSchools(16, cB1G, 2000000, 1.4, 'elite', [40, 80], [20, 50]); 
+                createSchools(16, cSEC, 1800000, 1.5, 'elite', [50, 85], [60, 90]);
+                createSchools(14, cB12, 1200000, 1.1, 'mid', [20, 60], [40, 70]);
+                createSchools(14, cACC, 1300000, 1.1, 'mid', [70, 95], [30, 70]);
+                createSchools(12, cMWC, 600000, 0.7, 'low', [5, 30], [20, 60]);
+                createSchools(12, cMAC, 500000, 0.6, 'low', [50, 70], [25, 45]);
+
+                // Initial Math
+                this.conferences.forEach(c => {
+                    c.recalculateCentroid();
+                    c.renegotiateMediaDeal();
+                    c.contractYearsLeft = Math.floor(randomInRange(1, 7)); // Stagger deals
+                });
+
+                this.logEvent("Simulation initialized with " + this.allSchools.length + " schools.", "system");
+            }
+
+            step() {
+                this.year++;
+                this.playSeason();
+                this.runCoachingCarousel();
+                this.runRealignmentCycle();
+                this.updateConferences();
+                
+                renderUI();
+            }
+
+            playSeason() {
+                // Calculate average revenue per conference for the formula
+                let confAvgRev = {};
+                this.conferences.forEach(c => confAvgRev[c.id] = c.annualPayoutPerSchool);
+
+                this.allSchools.forEach(school => {
+                    let conf = this.conferences.find(c => c.id === school.conferenceId);
+                    
+                    // Base Revenue + Pay to Play (Wins * Donors)
+                    let baseRev = conf.annualPayoutPerSchool;
+                    let donorRev = (school.getRecentWinAvg() * 500000) * school.coach.rho;
+                    school.currentRevenue = baseRev + donorRev;
+
+                    // Option A: Pay-to-Play Formula modified by Coach Staff Multiplier
+                    let financialAdvantage = school.currentRevenue / conf.annualPayoutPerSchool;
+                    let staffMulti = school.coach.getStaffMultiplier();
+                    
+                    let expectedWins = (financialAdvantage * 6) * staffMulti;
+                    let noise = randomInRange(-2, 2);
+                    
+                    let actualWins = Math.max(0, Math.min(12, Math.round(expectedWins + noise)));
+                    
+                    // Update arrays
+                    school.winsLast3Years.unshift(actualWins);
+                    school.winsLast3Years.pop();
+                    
+                    // Coach Teaching phase
+                    school.coach.coordO.grow(school.coach.mentorship, actualWins);
+                    school.coach.coordD.grow(school.coach.mentorship, actualWins);
+
+                    school.updateBrandValue();
+                });
+            }
+
+            runCoachingCarousel() {
+                let firedCoaches = 0;
+                let poachedCoords = 0;
+                
+                // 1. Fire bad coaches
+                let openJobs = [];
+                this.allSchools.forEach(school => {
+                    let recentWins = school.getRecentWinAvg();
+                    if (recentWins < 4.5 && Math.random() > 0.3) {
+                        firedCoaches++;
+                        openJobs.push(school);
+                        // Firing costs money (facilities/buyout hit, simplified here as prestige hit)
+                        school.prestige = Math.max(0.5, school.prestige - 0.05);
+                    }
+                });
+
+                // 2. Poach Elite Coordinators for open jobs
+                this.allSchools.forEach(school => {
+                    if (openJobs.length === 0) return;
+
+                    let recentWins = school.getRecentWinAvg();
+                    let checkPoach = (coord, type) => {
+                        if (coord.sigma > 0.85 && recentWins > 9) {
+                            let targetSchool = openJobs.shift();
+                            if (targetSchool) {
+                                // Hire as new HC
+                                let newCoach = new Coach(targetSchool.households > 1500000 ? 'elite' : 'mid');
+                                // Inherits some traits
+                                newCoach.eta = (school.coach.eta + newCoach.eta) / 2;
+                                targetSchool.coach = newCoach;
+                                poachedCoords++;
+                                
+                                this.logEvent(`${targetSchool.name} hired ${school.name}'s ${type} as new Head Coach.`, "coach");
+                                
+                                // Reset the poached school's coordinator slot
+                                return new Coordinator(); 
+                            }
+                        }
+                        return coord;
+                    };
+
+                    school.coach.coordO = checkPoach(school.coach.coordO, "Offensive Coordinator");
+                    school.coach.coordD = checkPoach(school.coach.coordD, "Defensive Coordinator");
+                });
+
+                // 3. Fill remaining jobs with rookies
+                openJobs.forEach(school => {
+                    school.coach = new Coach('low');
+                    this.logEvent(`${school.name} hired a rookie Head Coach from lower division.`, "coach");
+                });
+
+                if (firedCoaches > 0) this.logEvent(`${firedCoaches} head coaches were fired.`, "system");
+            }
+
+            runRealignmentCycle() {
+                // Schools evaluate their position
+                [...this.allSchools].sort((a,b) => b.brandValue - a.brandValue).forEach(school => {
+                    let currentConf = this.conferences.find(c => c.id === school.conferenceId);
+                    
+                    // 1. Calculate Desperation (D)
+                    let d = 0;
+                    if (currentConf.contractYearsLeft <= 2) d += 0.3;
+                    d += (currentConf.recentDepartures * 0.15);
+                    if (school.getRecentWinAvg() < 5) d += 0.1; // Desperate to find easier path or money
+                    d = Math.min(0.8, d);
+
+                    // 2. Look at other conferences
+                    this.conferences.forEach(targetConf => {
+                        if (targetConf.id === currentConf.id) return;
+
+                        // Calculate Financials
+                        let projectedBaseRev = targetConf.annualPayoutPerSchool;
+                        let fixedBuyout = 10000000;
+                        let gorPenalty = currentConf.contractYearsLeft * currentConf.annualPayoutPerSchool;
+                        let entryFee = targetConf.isPower && !currentConf.isPower ? 20000000 : 0; // Facilities upgrade
+                        
+                        let totalExitCost = fixedBuyout + gorPenalty + entryFee;
+                        let amortizedCost = totalExitCost / 10; // Spread over 10 years
+                        
+                        // Travel Tax
+                        let dist = distance(school.x, school.y, targetConf.centroidX, targetConf.centroidY);
+                        let travelTax = dist * 20000; // $20k per map unit distance
+
+                        let projectedNetRev = projectedBaseRev - amortizedCost - travelTax;
+
+                        // Revenue Gap Threshold modified by Desperation
+                        let requiredBump = currentConf.annualPayoutPerSchool * 1.15 * (1 - d);
+
+                        if (projectedNetRev > currentConf.annualPayoutPerSchool + requiredBump) {
+                            // School WANTS to move. Does Conference accept?
+                            if (targetConf.evaluateCandidate(school)) {
+                                this.executeMove(school, currentConf, targetConf, totalExitCost);
+                            }
+                        }
+                    });
+                });
+            }
+
+            executeMove(school, oldConf, newConf, cost) {
+                // Remove from old
+                oldConf.schools = oldConf.schools.filter(s => s.id !== school.id);
+                oldConf.recentDepartures++;
+                
+                // Add to new
+                school.conferenceId = newConf.id;
+                newConf.schools.push(school);
+
+                this.logEvent(`🚨 REALIGNMENT: ${school.name} leaves ${oldConf.name} for ${newConf.name} (Exit Cost: ${formatMoney(cost)})`, "realignment");
+
+                // Trigger Pro-Rata / Market resets
+                oldConf.renegotiateMediaDeal(); 
+                newConf.renegotiateMediaDeal();
+                oldConf.recalculateCentroid();
+                newConf.recalculateCentroid();
+            }
+
+            updateConferences() {
+                this.conferences.forEach(c => {
+                    c.contractYearsLeft--;
+                    if (c.contractYearsLeft <= 0) {
+                        this.logEvent(`📺 MEDIA DEAL: ${c.name} signs new contract valued at ${formatMoney(c.annualPayoutPerSchool)}/school.`, "system");
+                        c.renegotiateMediaDeal();
+                    }
+                });
+            }
+
+            logEvent(message, type) {
+                this.logs.unshift({ year: this.year, message, type, id: generateId() });
+                if (this.logs.length > 200) this.logs.pop(); // Keep array manageable
+            }
+        }
+
+        // --- UI RENDERING ---
+
+        const sim = new Simulation();
+        let domLogs = document.getElementById('event-logs');
+        let domConfs = document.getElementById('conferences-container');
+        let logFilter = document.getElementById('log-filter');
+
+        function renderUI() {
+            document.getElementById('current-year').innerText = sim.year;
+
+            // Global Stats
+            let totalMedia = 0;
+            sim.conferences.forEach(c => totalMedia += (c.annualPayoutPerSchool * c.schools.length));
+            document.getElementById('stat-total-media').innerText = formatMoney(totalMedia);
+            document.getElementById('stat-avg-rev').innerText = formatMoney(totalMedia / sim.allSchools.length);
+
+            // Render Conferences
+            domConfs.innerHTML = '';
+            
+            // Sort conferences by payout
+            let sortedConfs = [...sim.conferences].sort((a,b) => b.annualPayoutPerSchool - a.annualPayoutPerSchool);
+
+            sortedConfs.forEach(conf => {
+                let confDiv = document.createElement('div');
+                confDiv.className = "bg-slate-800 rounded-lg border border-slate-700 mb-4 overflow-hidden shadow-sm";
+                
+                let headerClass = conf.isPower ? "bg-gradient-to-r from-blue-900 to-slate-800" : "bg-slate-700";
+                
+                confDiv.innerHTML = `
+                    <div class="p-3 ${headerClass} border-b border-slate-700 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">${conf.name} <span class="text-xs font-normal text-slate-300 ml-2">(${conf.schools.length} members)</span></h3>
+                        <div class="text-right">
+                            <span class="text-green-400 font-mono font-bold">${formatMoney(conf.annualPayoutPerSchool)}</span><span class="text-xs text-slate-400"> /yr</span>
+                            <div class="text-xs text-slate-400 mt-0.5">TV Deal: ${conf.contractYearsLeft} yrs left</div>
+                        </div>
+                    </div>
+                    <div class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                        ${[...conf.schools].sort((a,b) => b.brandValue - a.brandValue).map(school => `
+                            <div class="school-card bg-slate-700/50 rounded border border-slate-600 p-2 flex flex-col justify-between">
+                                <div class="font-semibold text-sm text-slate-200 truncate" title="${school.name}">${school.name}</div>
+                                <div class="flex justify-between items-end mt-2">
+                                    <div class="text-xs text-slate-400">Wins: <span class="${school.winsLast3Years[0] > 8 ? 'text-green-400' : school.winsLast3Years[0] < 5 ? 'text-red-400' : 'text-slate-300'} font-bold">${school.winsLast3Years[0]}</span></div>
+                                    <div class="text-xs text-blue-300" title="Brand Value">V: ${(school.brandValue/1000000).toFixed(0)}</div>
+                                </div>
+                                <!-- Micro-bar for coordinator strength -->
+                                <div class="w-full bg-slate-800 h-1 mt-2 rounded flex gap-0.5 overflow-hidden" title="Offensive & Defensive Coordinator Strength">
+                                    <div class="bg-indigo-500 h-full" style="width: ${school.coach.coordO.sigma * 100}%"></div>
+                                    <div class="bg-teal-500 h-full" style="width: ${school.coach.coordD.sigma * 100}%"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                domConfs.appendChild(confDiv);
+            });
+
+            renderLogs();
+        }
+
+        function renderLogs() {
+            domLogs.innerHTML = '';
+            let filter = logFilter.value;
+            
+            let filteredLogs = sim.logs.filter(l => filter === 'all' || l.type === filter);
+            
+            filteredLogs.slice(0, 50).forEach(log => {
+                let el = document.createElement('div');
+                
+                let colorClass = "text-slate-300 border-slate-700 bg-slate-700/30";
+                if (log.type === 'realignment') colorClass = "text-orange-400 border-orange-900/50 bg-orange-900/20 font-medium";
+                if (log.type === 'coach') colorClass = "text-indigo-300 border-indigo-900/50 bg-indigo-900/20";
+                
+                el.className = `log-enter text-sm p-2 rounded border-l-2 ${colorClass}`;
+                el.innerHTML = `<span class="font-mono text-xs text-slate-500 mr-2">[${log.year}]</span> ${log.message}`;
+                domLogs.appendChild(el);
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+
+        document.getElementById('btn-step').addEventListener('click', () => {
+            sim.step();
+        });
+
+        document.getElementById('btn-play').addEventListener('click', (e) => {
+            sim.isPlaying = !sim.isPlaying;
+            let btn = e.target;
+            if (sim.isPlaying) {
+                btn.innerText = "Pause";
+                btn.classList.replace('bg-orange-600', 'bg-red-600');
+                btn.classList.replace('hover:bg-orange-500', 'hover:bg-red-500');
+                sim.intervalId = setInterval(() => sim.step(), 1500);
+            } else {
+                btn.innerText = "Auto-Play";
+                btn.classList.replace('bg-red-600', 'bg-orange-600');
+                btn.classList.replace('hover:bg-red-500', 'hover:bg-orange-500');
+                clearInterval(sim.intervalId);
+            }
+        });
+
+        logFilter.addEventListener('change', renderLogs);
+
+        // Initial Render
+        renderUI();
+
+    </script>
+</body>
+</html>
