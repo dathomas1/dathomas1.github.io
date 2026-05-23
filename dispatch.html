@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,13 +39,13 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">ZIP Code</label>
-                        <input type="text" id="zipInput" maxlength="5" placeholder="e.g. 33870" 
+                        <input type="text" id="zipInput" maxlength="5" placeholder="e.g. 34950" 
                                class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-medium tracking-wide">
                     </div>
                     
                     <!-- Alert Area for Errors -->
                     <div id="zipError" class="hidden p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl font-medium">
-                        We don't have an active route in that area today. Please double-check or call dispatch directly.
+                        We don't have an active route in Fort Pierce area ZIP code today. Please double-check or call dispatch directly.
                     </div>
 
                     <button onclick="validateZip()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-md shadow-blue-100 flex items-center justify-center gap-2">
@@ -115,12 +114,17 @@
                         <span class="text-slate-500">Billing Status:</span>
                         <span id="outCoverage" class="font-bold"></span>
                     </div>
-                    <div class="flex justify-between pb-1">
+                    <div class="flex justify-between border-b border-slate-200 pb-2">
                         <span class="text-slate-500">Patient Protocol:</span>
                         <span id="outPrep" class="font-bold text-slate-800"></span>
                     </div>
+                    <!-- New Cost Range Display Row -->
+                    <div class="flex justify-between pb-1 bg-blue-50/50 p-2 rounded-lg mt-1">
+                        <span class="text-blue-900 font-semibold">Est. Out of Pocket:</span>
+                        <span id="outCost" class="font-black text-blue-700"></span>
+                    </div>
                     
-                    <!-- Dynamic Dynamic Warning Banner for Fasting -->
+                    <!-- Dynamic Warning Banner for Fasting -->
                     <div id="fastingWarning" class="hidden p-2.5 bg-blue-100 border border-blue-200 text-blue-900 text-xs rounded-lg font-medium">
                         ⚠️ <strong>Typical Fasting Protocol:</strong> Do not consume food or juice for 8-12 hours prior to arrival. Water is highly encouraged.
                     </div>
@@ -154,16 +158,16 @@
             zip: '',
             insurance: '',
             testType: '',
-            dispatchNumber: '+13344627681' // Mock regional phone target
+            costRange: '',
+            dispatchNumber: '+13344627681' 
         };
 
-        // Allowed Regional Routing Zones
-        const validZips = ['33870', '33872', '33875', '33876'];
+        // Allowed Fort Pierce Regional Routing Zones
+        const validZips = ['34945', '34946', '34947', '34950', '34982'];
 
         function goToStep(targetStep) {
             state.step = targetStep;
             
-            // Toggle Step View Block States
             document.querySelectorAll('.wizard-step').forEach((el, index) => {
                 if (index === (targetStep - 1)) {
                     el.classList.remove('hidden');
@@ -174,11 +178,9 @@
                 }
             });
 
-            // Update Graphical Top Visual Indicators & Bar Trackers
             const dots = document.querySelectorAll('.step-dot');
             const progressLine = document.getElementById('line-progress');
             
-            // Calculate connecting bar widths
             if (targetStep === 1) progressLine.style.width = '0%';
             if (targetStep === 2) progressLine.style.width = '50%';
             if (targetStep === 3) progressLine.style.width = '100%';
@@ -207,11 +209,35 @@
             }
         }
 
+        function calculateCost(insurance, testType) {
+            let low = 0;
+            let high = 0;
+
+            // Baseline Cost via Insurance Tiers
+            if (['Blue Cross', 'Aetna', 'Cigna'].includes(insurance)) {
+                low = 35;
+                high = 50;
+            } else if (['UnitedHealthcare', 'Medicare'].includes(insurance)) {
+                low = 75;
+                high = 95;
+            } else { // Self-Pay
+                low = 110;
+                high = 140;
+            }
+
+            // Labor Modifiers
+            if (testType === 'Pediatric Draw') {
+                low += 20;
+                high += 20;
+            }
+
+            return `$${low} - $${high}`;
+        }
+
         function compileDispatch() {
             const insVal = document.getElementById('insuranceInput').value;
             const testVal = document.getElementById('testInput').value;
 
-            // Form Validation Escape Hatch
             if (!insVal || !testVal) {
                 alert('Please fill out both inputs to prepare your manifest routing targets.');
                 return;
@@ -219,15 +245,16 @@
 
             state.insurance = insVal;
             state.testType = testVal;
+            state.costRange = calculateCost(insVal, testVal);
 
-            // Render calculations into step 3 presentation tags
+            // Render calculations into step 3 UI tags
             document.getElementById('outZip').innerText = state.zip;
             document.getElementById('outPrep').innerText = state.testType;
+            document.getElementById('outCost').innerText = state.costRange;
 
             const coverageBadge = document.getElementById('outCoverage');
             coverageBadge.innerText = state.insurance;
 
-            // Set Color Contexts dynamically based on insurance parameters
             if (['Blue Cross', 'Aetna', 'Cigna'].includes(state.insurance)) {
                 coverageBadge.className = 'font-bold text-green-600';
             } else if (['UnitedHealthcare', 'Medicare'].includes(state.insurance)) {
@@ -236,7 +263,6 @@
                 coverageBadge.className = 'font-bold text-slate-700';
             }
 
-            // Toggle operational warnings conditionally
             const fastWarning = document.getElementById('fastingWarning');
             if (state.testType === 'Fasting Required') {
                 fastWarning.classList.remove('hidden');
@@ -244,14 +270,14 @@
                 fastWarning.classList.add('hidden');
             }
 
-            // Build structural URL String using URI encodings safely for native systems
+            // Build structural URL String (including the new calculated estimate)
             const smsMessage = `Hi Mobile Dispatch, I need to schedule a mobile draw.\n\n` +
                                `- Location ZIP: ${state.zip}\n` +
                                `- Coverage/Payer: ${state.insurance}\n` +
-                               `- Test Selection: ${state.testType}\n\n` +
+                               `- Test Selection: ${state.testType}\n` +
+                               `- Est. Cost Range: ${state.costRange}\n\n` +
                                `Please check closest route arrivals.`;
 
-            // cross-system execution syntax template context
             const cleanSMSHref = `sms:${state.dispatchNumber}?&body=${encodeURIComponent(smsMessage)}`;
             document.getElementById('smsActionButton').href = cleanSMSHref;
 
@@ -260,5 +286,3 @@
     </script>
 </body>
 </html>
-
-```
