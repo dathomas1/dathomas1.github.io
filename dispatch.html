@@ -1,0 +1,268 @@
+Here is the complete, single-file prototype code. It includes the HTML structure, Tailwind CSS via CDN, and the vanilla JavaScript state engine.
+
+You can save this directly as an `.html` file (e.g., `dispatch-wizard.html`) and open it right in your browser to test it.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Phlebotomy Dispatch Wizard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Wizard Card Container -->
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden font-sans">
+        
+        <!-- Header & Progress Tracker -->
+        <div class="bg-slate-950 p-6 text-white">
+            <h2 class="text-lg font-bold tracking-tight">Mobile Draw Dispatch</h2>
+            <p class="text-xs text-slate-400 mt-1">Check availability and route your technician instantly.</p>
+            
+            <!-- Step Indicators -->
+            <div class="flex items-center justify-between mt-6 relative">
+                <div class="absolute left-0 top-1/2 h-0.5 bg-slate-800 w-full -translate-y-1/2 z-0"></div>
+                <div id="line-progress" class="absolute left-0 top-1/2 h-0.5 bg-blue-500 w-0 -translate-y-1/2 transition-all duration-300 z-0"></div>
+                
+                <div class="step-dot z-10 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold transition-all duration-300">1</div>
+                <div class="step-dot z-10 w-8 h-8 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-xs font-bold transition-all duration-300">2</div>
+                <div class="step-dot z-10 w-8 h-8 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-xs font-bold transition-all duration-300">3</div>
+            </div>
+        </div>
+
+        <!-- Wizard Body forms -->
+        <div class="p-6">
+            
+            <!-- STEP 1: SERVICE AREA CHECK -->
+            <div id="step-1" class="wizard-step block">
+                <h3 class="text-base font-bold text-slate-800 mb-2">Where do you need the draw?</h3>
+                <p class="text-sm text-slate-500 mb-4">Enter your ZIP code to verify technician availability in your neighborhood.</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">ZIP Code</label>
+                        <input type="text" id="zipInput" maxlength="5" placeholder="e.g. 33870" 
+                               class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-medium tracking-wide">
+                    </div>
+                    
+                    <!-- Alert Area for Errors -->
+                    <div id="zipError" class="hidden p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl font-medium">
+                        We don't have an active route in that area today. Please double-check or call dispatch directly.
+                    </div>
+
+                    <button onclick="validateZip()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-md shadow-blue-100 flex items-center justify-center gap-2">
+                        Check Availability
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: COVERAGE & LAB TYPE -->
+            <div id="step-2" class="wizard-step hidden">
+                <h3 class="text-base font-bold text-slate-800 mb-2">Coverage & Lab Details</h3>
+                <p class="text-sm text-slate-500 mb-4">Select your details to configure network billing rules and instructions.</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Insurance Provider</label>
+                        <select id="insuranceInput" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-medium">
+                            <option value="">Select Insurance Type...</option>
+                            <option value="Blue Cross">Blue Cross (In-Network)</option>
+                            <option value="Aetna">Aetna (In-Network)</option>
+                            <option value="Cigna">Cigna (In-Network)</option>
+                            <option value="UnitedHealthcare">UnitedHealthcare (Out-of-Network)</option>
+                            <option value="Medicare">Medicare (Requires Superbill)</option>
+                            <option value="Self-Pay">No Insurance / Self-Pay</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Test Protocol Required</label>
+                        <select id="testInput" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-medium">
+                            <option value="">Select Test Type...</option>
+                            <option value="Routine Draw">Routine Panels (CBC, CMP, Lipids)</option>
+                            <option value="Fasting Required">Fasting Test (Requires 8-12hr Fast)</option>
+                            <option value="Pediatric Draw">Pediatric / Sensitive Draw</option>
+                        </select>
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="goToStep(1)" class="w-1/3 border border-slate-200 text-slate-600 font-bold py-3.5 px-4 rounded-xl hover:bg-slate-50 transition">
+                            Back
+                        </button>
+                        <button onclick="compileDispatch()" class="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-md shadow-blue-100">
+                            Build Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: DISPATCH RECONCILIATION -->
+            <div id="step-3" class="wizard-step hidden">
+                <div class="text-center mb-4">
+                    <span class="inline-flex p-2 bg-green-50 rounded-full text-green-600 mb-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    </span>
+                    <h3 class="text-base font-bold text-slate-800">Route Verified & Ready</h3>
+                    <p class="text-xs text-slate-500">Your dispatch manifest has been securely compiled.</p>
+                </div>
+
+                <!-- Dynamic Output Badges -->
+                <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm mb-5">
+                    <div class="flex justify-between border-b border-slate-200 pb-2">
+                        <span class="text-slate-500">Service Zone:</span>
+                        <span id="outZip" class="font-bold text-slate-800"></span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-200 pb-2">
+                        <span class="text-slate-500">Billing Status:</span>
+                        <span id="outCoverage" class="font-bold"></span>
+                    </div>
+                    <div class="flex justify-between pb-1">
+                        <span class="text-slate-500">Patient Protocol:</span>
+                        <span id="outPrep" class="font-bold text-slate-800"></span>
+                    </div>
+                    
+                    <!-- Dynamic Dynamic Warning Banner for Fasting -->
+                    <div id="fastingWarning" class="hidden p-2.5 bg-blue-100 border border-blue-200 text-blue-900 text-xs rounded-lg font-medium">
+                        ⚠️ <strong>Fasting Protocol:</strong> Do not consume food or juice for 8-12 hours prior to arrival. Water is highly encouraged.
+                    </div>
+                </div>
+
+                <!-- Action Blocks -->
+                <div class="space-y-3">
+                    <!-- Native Mobile SMS Anchor Button -->
+                    <a id="smsActionButton" href="#" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 px-4 rounded-xl transition text-center block shadow-md">
+                        Tap to Text Dispatcher
+                    </a>
+                    
+                    <!-- Desktop Visibility Alternative Box -->
+                    <div class="text-center">
+                        <p class="text-[10px] text-slate-400">On desktop? Manifest details will paste cleanly into your chat window link.</p>
+                        <button onclick="goToStep(2)" class="mt-3 text-xs font-semibold text-blue-600 hover:underline">
+                            Edit Manifest Parameters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Application Script Logic -->
+    <script>
+        // State Machine
+        const state = {
+            step: 1,
+            zip: '',
+            insurance: '',
+            testType: '',
+            dispatchNumber: '+18635550199' // Mock regional phone target
+        };
+
+        // Allowed Regional Routing Zones
+        const validZips = ['33870', '33872', '33875', '33876'];
+
+        function goToStep(targetStep) {
+            state.step = targetStep;
+            
+            // Toggle Step View Block States
+            document.querySelectorAll('.wizard-step').forEach((el, index) => {
+                if (index === (targetStep - 1)) {
+                    el.classList.remove('hidden');
+                    el.classList.add('block');
+                } else {
+                    el.classList.remove('block');
+                    el.classList.add('hidden');
+                }
+            });
+
+            // Update Graphical Top Visual Indicators & Bar Trackers
+            const dots = document.querySelectorAll('.step-dot');
+            const progressLine = document.getElementById('line-progress');
+            
+            // Calculate connecting bar widths
+            if (targetStep === 1) progressLine.style.width = '0%';
+            if (targetStep === 2) progressLine.style.width = '50%';
+            if (targetStep === 3) progressLine.style.width = '100%';
+
+            dots.forEach((dot, idx) => {
+                if (idx < targetStep) {
+                    dot.classList.remove('bg-slate-800', 'text-slate-400');
+                    dot.classList.add('bg-blue-500', 'text-white');
+                } else {
+                    dot.classList.remove('bg-blue-500', 'text-white');
+                    dot.classList.add('bg-slate-800', 'text-slate-400');
+                }
+            });
+        }
+
+        function validateZip() {
+            const zipVal = document.getElementById('zipInput').value.trim();
+            const errorDiv = document.getElementById('zipError');
+
+            if (validZips.includes(zipVal)) {
+                state.zip = zipVal;
+                errorDiv.classList.add('hidden');
+                goToStep(2);
+            } else {
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        function compileDispatch() {
+            const insVal = document.getElementById('insuranceInput').value;
+            const testVal = document.getElementById('testInput').value;
+
+            // Form Validation Escape Hatch
+            if (!insVal || !testVal) {
+                alert('Please fill out both inputs to prepare your manifest routing targets.');
+                return;
+            }
+
+            state.insurance = insVal;
+            state.testType = testVal;
+
+            // Render calculations into step 3 presentation tags
+            document.getElementById('outZip').innerText = state.zip;
+            document.getElementById('outPrep').innerText = state.testType;
+
+            const coverageBadge = document.getElementById('outCoverage');
+            coverageBadge.innerText = state.insurance;
+
+            // Set Color Contexts dynamically based on insurance parameters
+            if (['Blue Cross', 'Aetna', 'Cigna'].includes(state.insurance)) {
+                coverageBadge.className = 'font-bold text-green-600';
+            } else if (['UnitedHealthcare', 'Medicare'].includes(state.insurance)) {
+                coverageBadge.className = 'font-bold text-amber-600';
+            } else {
+                coverageBadge.className = 'font-bold text-slate-700';
+            }
+
+            // Toggle operational warnings conditionally
+            const fastWarning = document.getElementById('fastingWarning');
+            if (state.testType === 'Fasting Required') {
+                fastWarning.classList.remove('hidden');
+            } else {
+                fastWarning.classList.add('hidden');
+            }
+
+            // Build structural URL String using URI encodings safely for native systems
+            const smsMessage = `Hi Mobile Dispatch, I need to schedule a mobile draw.\n\n` +
+                               `- Location ZIP: ${state.zip}\n` +
+                               `- Coverage/Payer: ${state.insurance}\n` +
+                               `- Test Selection: ${state.testType}\n\n` +
+                               `Please check closest route arrivals.`;
+
+            // cross-system execution syntax template context
+            const cleanSMSHref = `sms:${state.dispatchNumber}?&body=${encodeURIComponent(smsMessage)}`;
+            document.getElementById('smsActionButton').href = cleanSMSHref;
+
+            goToStep(3);
+        }
+    </script>
+</body>
+</html>
+
+```
