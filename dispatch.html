@@ -89,7 +89,7 @@
                             Back
                         </button>
                         <button onclick="compileDispatch()" class="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-md shadow-blue-100">
-                            Build Order
+                            Compile Request
                         </button>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                     </span>
                     <h3 class="text-base font-bold text-slate-800">Route Verified & Ready</h3>
-                    <p class="text-xs text-slate-500">Your dispatch manifest has been securely compiled.</p>
+                    <p class="text-xs text-slate-500">Your request has been compiled.</p>
                 </div>
 
                 <!-- Dynamic Output Badges -->
@@ -122,7 +122,7 @@
                     
                     <!-- Dynamic Dynamic Warning Banner for Fasting -->
                     <div id="fastingWarning" class="hidden p-2.5 bg-blue-100 border border-blue-200 text-blue-900 text-xs rounded-lg font-medium">
-                        ⚠️ <strong>Fasting Protocol:</strong> Do not consume food or juice for 8-12 hours prior to arrival. Water is highly encouraged.
+                        ⚠️ <strong>Typical Fasting Protocol:</strong> Do not consume food or juice for 8-12 hours prior to arrival. Water is highly encouraged.
                     </div>
                 </div>
 
@@ -130,14 +130,14 @@
                 <div class="space-y-3">
                     <!-- Native Mobile SMS Anchor Button -->
                     <a id="smsActionButton" href="#" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 px-4 rounded-xl transition text-center block shadow-md">
-                        Tap to Text Dispatcher
+                        Tap to Text
                     </a>
                     
                     <!-- Desktop Visibility Alternative Box -->
                     <div class="text-center">
-                        <p class="text-[10px] text-slate-400">On desktop? Manifest details will paste cleanly into your chat window link.</p>
+                        <p class="text-[10px] text-slate-400">On desktop? Email us directly.</p>
                         <button onclick="goToStep(2)" class="mt-3 text-xs font-semibold text-blue-600 hover:underline">
-                            Edit Manifest Parameters
+                            Edit Parameters
                         </button>
                     </div>
                 </div>
@@ -154,7 +154,7 @@
             zip: '',
             insurance: '',
             testType: '',
-            dispatchNumber: '+18635550199' // Mock regional phone target
+            dispatchNumber: '+13344627681' // Mock regional phone target
         };
 
         // Allowed Regional Routing Zones
