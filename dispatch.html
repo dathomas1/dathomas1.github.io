@@ -15,7 +15,7 @@
         <!-- Header & Progress Tracker -->
         <div class="bg-slate-950 p-6 text-white">
             <h2 class="text-lg font-bold tracking-tight">Mobile Draw Dispatch</h2>
-            <p class="text-xs text-slate-400 mt-1">Check availability and route your technician instantly.</p>
+            <p class="text-xs text-slate-400 mt-1">Check availability.</p>
             
             <!-- Step Indicators -->
             <div class="flex items-center justify-between mt-6 relative">
@@ -34,7 +34,7 @@
             <!-- STEP 1: SERVICE AREA CHECK -->
             <div id="step-1" class="wizard-step block">
                 <h3 class="text-base font-bold text-slate-800 mb-2">Where do you need the draw?</h3>
-                <p class="text-sm text-slate-500 mb-4">Enter your ZIP code to verify technician availability in your neighborhood.</p>
+                <p class="text-sm text-slate-500 mb-4">Enter your ZIP code to verify availability in your neighborhood.</p>
                 
                 <div class="space-y-4">
                     <div>
@@ -45,7 +45,7 @@
                     
                     <!-- Alert Area for Errors -->
                     <div id="zipError" class="hidden p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl font-medium">
-                        We don't have an active route in Fort Pierce area ZIP code today. Please double-check or call dispatch directly.
+                        We don't have an active route in that ZIP code today. Please call us directly.
                     </div>
 
                     <button onclick="validateZip()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-md shadow-blue-100 flex items-center justify-center gap-2">
@@ -57,7 +57,7 @@
             <!-- STEP 2: COVERAGE & LAB TYPE -->
             <div id="step-2" class="wizard-step hidden">
                 <h3 class="text-base font-bold text-slate-800 mb-2">Coverage & Lab Details</h3>
-                <p class="text-sm text-slate-500 mb-4">Select your details to configure network billing rules and instructions.</p>
+                <p class="text-sm text-slate-500 mb-4">Select your details and instructions.</p>
                 
                 <div class="space-y-4">
                     <div>
