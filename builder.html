@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monolith Builder - Step 5 (Split Block)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        [x-cloak] { display: none !important; }
+        
+        /* Highlight active canvas element */
+        .section-focused {
+            outline: 2px solid #6366f1 !important;
+            outline-offset: -2px;
+            position: relative;
+        }
+    </style>
+
+    <!-- Alpine.js Application Logic -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('builderApp', () => ({
+                sections: [],
+                activeIndex: null,
+                showExportModal: false,
+                generatedCode: '',
+                copyStatus: 'Copy Code',
+
+                // Template Definitions
+                templates: {
+                    hero: {
+                        name: 'Hero Section',
+                        icon: '⚡',
+                        defaultData: {
+                            heading: 'Beautiful analytics to grow smarter',
+                            subheading: 'Powerful, self-serve product and growth analytics.',
+                            buttonText: 'Get Started',
+                            showSubheading: true,
+                            showButton: true
+                        }
+                    },
+                    split_block: {
+                        name: 'Split Media Block',
+                        icon: '🧱',
+                        defaultData: {
+                            title: 'Delivering results with clear focus',
+                            text: 'Our specialized solutions help groups organize complicated workflows. We establish stable, structural grids that map precisely to operational goals.',
+                            primaryBtnText: 'Get Started',
+                            secondaryBtnText: 'Learn More',
+                            flipLayout: false, // false = Image Left, true = Image Right
+                            showTitle: true,
+                            showText: true,
+                            showPrimaryBtn: true,
+                            showSecondaryBtn: true
+                        }
+                    },
+                    text_content: {
+                        name: 'Rich Text Block',
+                        icon: '📝',
+                        defaultData: {
+                            title: 'Our Vision',
+                            p1: 'We believe that accessibility is not an option; it is the cornerstone of great design.',
+                            showTitle: true
+                        }
+                    },
+                    faq: {
+                        name: 'FAQ Accordion',
+                        icon: '❓',
+                        defaultData: {
+                            title: 'Frequently asked questions',
+                            subtitle: 'Everything you need to know about our classes, programs, and support groups.',
+                            items: [
+                                { q: 'Are your classes free?', a: 'Yes! Every class we offer is 100% free to join.' },
+                                { q: 'Are they online?', a: 'Yes, all of our active programs are completely virtual, allowing participation from any location.' }
+                            ]
+                        }
+                    },
+                    testimonials: {
+                        name: 'Testimonials Carousel',
+                        icon: '💬',
+                        defaultData: {
+                            title: 'What our wonderful community says',
+                            items: [
+                                { quote: '"We\'ve been using this layout system to launch projects 3x faster, and we can\'t imagine working without it."', author: 'Candice Wu', role: 'Product Manager, Sisyphus' },
+                                { quote: '"Disability Partnerships seated exercise classes have been a lifesaver. I get stronger and build endurance from home."', author: 'Stefan Sears', role: 'Seated Exercise Participant' }
+                            ]
+                        }
+                    }
+                },
+
+                // Core Canvas Functions
+                addSection(type) {
+                    const newData = JSON.parse(JSON.stringify(this.templates[type].defaultData));
+                    this.sections.push({
+                        id: 'sec_' + Date.now() + Math.floor(Math.random() * 1000),
+                        type: type,
+                        data: newData
+                    });
+                    this.activeIndex = this.sections.length - 1;
+                },
+
+                removeSection(index) {
+                    this.sections.splice(index, 1);
+                    if (this.activeIndex === index) {
+                        this.activeIndex = null;
+                    } else if (this.activeIndex > index) {
+                        this.activeIndex--;
+                    }
+                },
+
+                moveUp(index) {
+                    if (index === 0) return;
+                    const temp = this.sections[index];
+                    this.sections[index] = this.sections[index - 1];
+                    this.sections[index - 1] = temp;
+                    if (this.activeIndex === index) this.activeIndex = index - 1;
+                    else if (this.activeIndex === index - 1) this.activeIndex = index;
+                },
+
+                moveDown(index) {
+                    if (index === this.sections.length - 1) return;
+                    const temp = this.sections[index];
+                    this.sections[index] = this.sections[index + 1];
+                    this.sections[index + 1] = temp;
+                    if (this.activeIndex === index) this.activeIndex = index + 1;
+                    else if (this.activeIndex === index + 1) this.activeIndex = index;
+                },
+
+                // FAQ Item Operations
+                addFaqItem(index) {
+                    this.sections[index].data.items.push({
+                        q: 'New Question?',
+                        a: 'Provide answer details here.'
+                    });
+                },
+
+                removeFaqItem(secIndex, itemIndex) {
+                    this.sections[secIndex].data.items.splice(itemIndex, 1);
+                },
+
+                // Testimonial Item Operations
+                addTestimonialItem(index) {
+                    this.sections[index].data.items.push({
+                        quote: '"Insert positive review or impact testimony text here."',
+                        author: 'User Name',
+                        role: 'User Role/Title'
+                    });
+                },
+
+                removeTestimonialItem(secIndex, itemIndex) {
+                    this.sections[secIndex].data.items.splice(itemIndex, 1);
+                },
+
+                // Clean static HTML exporter
+                generateCleanExport() {
+                    let bodyContent = '';
+
+                    this.sections.forEach(section => {
+                        const d = section.data;
+                        if (section.type === 'hero') {
+                            bodyContent += `
+    <!-- Hero Section -->
+    <section class="py-20 px-8 text-center bg-white border-b border-slate-100">
+        <div class="max-w-3xl mx-auto">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mb-6">${d.heading}</h1>
+            ${d.showSubheading ? `<p class="text-lg text-slate-500 mb-8 leading-relaxed">${d.subheading}</p>` : ''}
+            ${d.showButton ? `<div><a href="#" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3.5 rounded transition inline-block">${d.buttonText}</a></div>` : ''}
+        </div>
+    </section>`;
+                        } else if (section.type === 'split_block') {
+                            const imageOrderClass = d.flipLayout ? 'md:order-last' : 'md:order-first';
+                            const textOrderClass = d.flipLayout ? 'md:order-first' : 'md:order-last';
+                            bodyContent += `
+    <!-- Split Media Block -->
+    <section class="py-20 px-8 bg-white border-b border-slate-100">
+        <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+            <!-- Left/Right Adaptive Graphic -->
+            <div class="aspect-video bg-slate-200 border border-slate-300 rounded-lg flex flex-col items-center justify-center p-4 text-center ${imageOrderClass}">
+                <span class="text-2xl text-slate-400 mb-1">🖼️</span>
+                <span class="text-[10px] text-slate-400 font-mono font-bold uppercase tracking-wider">[Image Frame Placeholder]</span>
+            </div>
+            <!-- Left/Right Content Grid -->
+            <div class="space-y-6 text-left ${textOrderClass}">
+                ${d.showTitle ? `<h2 class="text-3xl font-extrabold tracking-tight text-slate-900">${d.title}</h2>` : ''}
+                ${d.showText ? `<p class="text-sm text-slate-500 leading-relaxed">${d.text}</p>` : ''}
+                ${(d.showPrimaryBtn || d.showSecondaryBtn) ? `
+                <div class="flex flex-wrap gap-3 pt-2">
+                    ${d.showPrimaryBtn ? `<a href="#" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-5 py-3 rounded transition inline-block">${d.primaryBtnText}</a>` : ''}
+                    ${d.showSecondaryBtn ? `<a href="#" class="border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs px-5 py-3 rounded transition inline-block">${d.secondaryBtnText}</a>` : ''}
+                </div>` : ''}
+            </div>
+        </div>
+    </section>`;
+                        } else if (section.type === 'text_content') {
+                            bodyContent += `
+    <!-- Rich Text Block -->
+    <section class="py-16 px-8 bg-white border-b border-slate-100 text-left">
+        <div class="max-w-2xl mx-auto">
+            ${d.showTitle ? `<h2 class="text-3xl font-bold mb-6 text-slate-900 tracking-tight">${d.title}</h2>` : ''}
+            <div class="text-slate-600 leading-relaxed space-y-4">
+                <p>${d.p1}</p>
+            </div>
+        </div>
+    </section>`;
+                        } else if (section.type === 'faq') {
+                            let faqItemsHtml = '';
+                            d.items.forEach(item => {
+                                faqItemsHtml += `
+            <details class="group py-4">
+                <summary class="flex justify-between items-center font-bold text-sm text-slate-800 cursor-pointer list-none focus:outline-none">
+                    <span>${item.q}</span>
+                    <span class="text-slate-400 group-open:rotate-180 transition-transform duration-200">+</span>
+                </summary>
+                <p class="mt-3 text-sm text-slate-500 leading-relaxed">${item.a}</p>
+            </details>`;
+                            });
+
+                            bodyContent += `
+    <!-- FAQ Accordion (Zero JS Dependency, HTML Native Details) -->
+    <section class="py-20 px-8 bg-white border-b border-slate-100">
+        <div class="max-w-3xl mx-auto space-y-8 text-left">
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900">${d.title}</h2>
+                <p class="text-sm text-slate-500">${d.subtitle}</p>
+            </div>
+            <div class="divide-y divide-slate-200 border-t border-b border-slate-200">
+                ${faqItemsHtml}
+            </div>
+        </div>
+    </section>`;
+                        } else if (section.type === 'testimonials') {
+                            let slidesHtml = '';
+                            d.items.forEach((item, idx) => {
+                                slidesHtml += `
+                    <!-- Slide ${idx + 1} -->
+                    <div class="w-full shrink-0 flex flex-col items-center text-center px-4 transition-all duration-300 ${idx === 0 ? '' : 'hidden'}" data-slide="${idx}">
+                        <p class="text-xl sm:text-2xl font-medium text-slate-850 max-w-3xl mb-8 italic">${item.quote}</p>
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-700 mb-3">${item.author.charAt(0)}</div>
+                            <h4 class="font-bold text-slate-900 text-sm">${item.author}</h4>
+                            <p class="text-xs text-slate-400 mt-1">${item.role}</p>
+                        </div>
+                    </div>`;
+                            });
+
+                            bodyContent += `
+    <!-- Testimonial Carousel Section (Vanilla JS Activated) -->
+    <section class="py-20 bg-slate-50 border-b border-slate-100" data-carousel>
+        <div class="max-w-5xl mx-auto px-4 relative">
+            <h2 class="text-3xl font-bold text-slate-900 text-center mb-16 tracking-tight">${d.title}</h2>
+            
+            <!-- Carousel Outer Viewport wrapper -->
+            <div class="overflow-hidden relative flex">
+                <div class="flex w-full transition-transform duration-300">
+                    ${slidesHtml}
+                </div>
+            </div>
+
+            <!-- Left and Right Arrow Controllers -->
+            <div class="flex justify-center space-x-4 mt-12">
+                <button data-prev class="w-10 h-10 border border-slate-300 rounded-full flex items-center justify-center text-slate-600 hover:bg-white hover:border-slate-400 focus:outline-none transition">&larr;</button>
+                <button data-next class="w-10 h-10 border border-slate-300 rounded-full flex items-center justify-center text-slate-600 hover:bg-white hover:border-slate-400 focus:outline-none transition">&rarr;</button>
+            </div>
+        </div>
+    </section>`;
+                        }
+                    });
+
+                    this.generatedCode = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monolith Built Webpage</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFFFFF;
+            color: #0f172a;
+        }
+        [x-cloak] { display: none !important; }
+        /* Rotates details element plus/minus indicator natively on open */
+        details[open] summary span:last-child {
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body class="antialiased flex flex-col min-h-screen">
+${bodyContent}
+
+    <!-- Zero-Dependency, Scalable Carousel Vanilla JS Controller -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-carousel]').forEach(carousel => {
+                let currentIndex = 0;
+                const slides = carousel.querySelectorAll('[data-slide]');
+                if (slides.length <= 1) {
+                    const prevBtn = carousel.querySelector('[data-prev]');
+                    const nextBtn = carousel.querySelector('[data-next]');
+                    if (prevBtn) prevBtn.style.display = 'none';
+                    if (nextBtn) nextBtn.style.display = 'none';
+                    return;
+                }
+
+                const updateSlides = () => {
+                    slides.forEach((slide, index) => {
+                        if (index === currentIndex) {
+                            slide.classList.remove('hidden');
+                        } else {
+                            slide.classList.add('hidden');
+                        }
+                    });
+                };
+
+                carousel.querySelector('[data-prev]').addEventListener('click', () => {
+                    currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+                    updateSlides();
+                });
+
+                carousel.querySelector('[data-next]').addEventListener('click', () => {
+                    currentIndex = (currentIndex + 1) % slides.length;
+                    updateSlides();
+                });
+            });
+        });
+    <\/script>
+</body>
+</html>`;
+                    
+                    this.showExportModal = true;
+                },
+
+                copyToClipboard() {
+                    navigator.clipboard.writeText(this.generatedCode).then(() => {
+                        this.copyStatus = '✅ Copied!';
+                        setTimeout(() => this.copyStatus = 'Copy Code', 2000);
+                    }).catch(() => {
+                        const el = document.createElement('textarea');
+                        el.value = this.generatedCode;
+                        document.body.appendChild(el);
+                        el.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(el);
+                        this.copyStatus = '✅ Copied!';
+                        setTimeout(() => this.copyStatus = 'Copy Code', 2000);
+                    });
+                }
+            }));
+        });
+    </script>
+    <!-- Load Alpine after logic is defined -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 overflow-hidden h-screen flex flex-col" x-data="builderApp">
+
+    <!-- HEADER -->
+    <header class="bg-slate-950 border-b border-slate-800 h-14 flex items-center justify-between px-6 shrink-0">
+        <h1 class="text-sm font-bold text-white tracking-wide">Monolith Builder</h1>
+        <button @click="generateCleanExport()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-1.5 rounded transition shadow-lg shadow-indigo-600/20">
+            ⚡ Export Clean Code
+        </button>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <div class="flex-grow flex overflow-hidden">
+        
+        <!-- LEFT SIDEBAR: Library & Layers -->
+        <aside class="w-64 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0">
+            <!-- Add Components -->
+            <div class="p-3 border-b border-slate-800">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">1. Library</h2>
+                <div class="space-y-2">
+                    <template x-for="(tpl, type) in templates" :key="type">
+                        <button @click="addSection(type)" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 p-2 rounded text-left text-xs text-slate-300 flex justify-between">
+                            <span><span x-text="tpl.icon" class="mr-2"></span><span x-text="tpl.name"></span></span>
+                            <span class="text-slate-500">+</span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Layer Manager -->
+            <div class="p-3 flex-grow overflow-y-auto">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">2. Layout</h2>
+                
+                <template x-if="sections.length === 0">
+                    <p class="text-xs text-slate-600 italic mt-4">Canvas is empty.</p>
+                </template>
+
+                <div class="space-y-1">
+                    <template x-for="(section, index) in sections" :key="section.id">
+                        <div class="flex items-center justify-between border
