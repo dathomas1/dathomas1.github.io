@@ -13,6 +13,11 @@
             background-color: #FFFFFF;
             color: #0f172a;
         }
+        [x-cloak] { display: none !important; }
+        /* Rotates details element plus/minus indicator natively on open */
+        details[open] summary span:last-child {
+            transform: rotate(45deg);
+        }
     </style>
 </head>
 <body class="antialiased flex flex-col min-h-screen">
@@ -34,14 +39,106 @@
             </div>
         </div>
     </section>
-    <!-- Rich Text Block -->
-    <section class="py-16 px-8 bg-white border-b border-slate-100 text-left">
-        <div class="max-w-2xl mx-auto">
-            <h2 class="text-3xl font-bold mb-6 text-slate-900 tracking-tight">Our mission</h2>
-            <div class="text-slate-600 leading-relaxed space-y-4">
-                <p>we know it will be easy. </p>
+    <!-- Testimonial Carousel Section (Vanilla JS Activated) -->
+    <section class="py-20 bg-slate-50 border-b border-slate-100" data-carousel>
+        <div class="max-w-5xl mx-auto px-4 relative">
+            <h2 class="text-3xl font-bold text-slate-900 text-center mb-16 tracking-tight">What our wonderful community says</h2>
+            
+            <!-- Carousel Outer Viewport wrapper -->
+            <div class="overflow-hidden relative flex">
+                <div class="flex w-full transition-transform duration-300">
+                    
+                    <!-- Slide 1 -->
+                    <div class="w-full shrink-0 flex flex-col items-center text-center px-4 transition-all duration-300 " data-slide="0">
+                        <p class="text-xl sm:text-2xl font-medium text-slate-850 max-w-3xl mb-8 italic">"We've been using this layout system to launch projects 3x faster, and we can't imagine working without it."</p>
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-700 mb-3">C</div>
+                            <h4 class="font-bold text-slate-900 text-sm">Candice Wu</h4>
+                            <p class="text-xs text-slate-400 mt-1">Product Manager, Sisyphus</p>
+                        </div>
+                    </div>
+                    <!-- Slide 2 -->
+                    <div class="w-full shrink-0 flex flex-col items-center text-center px-4 transition-all duration-300 hidden" data-slide="1">
+                        <p class="text-xl sm:text-2xl font-medium text-slate-850 max-w-3xl mb-8 italic">"Disability Partnerships seated exercise classes have been a lifesaver. I get stronger and build endurance from home."</p>
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-700 mb-3">S</div>
+                            <h4 class="font-bold text-slate-900 text-sm">Stefan Sears</h4>
+                            <p class="text-xs text-slate-400 mt-1">Seated Exercise Participant</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Left and Right Arrow Controllers -->
+            <div class="flex justify-center space-x-4 mt-12">
+                <button data-prev class="w-10 h-10 border border-slate-300 rounded-full flex items-center justify-center text-slate-600 hover:bg-white hover:border-slate-400 focus:outline-none transition">&larr;</button>
+                <button data-next class="w-10 h-10 border border-slate-300 rounded-full flex items-center justify-center text-slate-600 hover:bg-white hover:border-slate-400 focus:outline-none transition">&rarr;</button>
             </div>
         </div>
     </section>
+    <!-- FAQ Accordion (Zero JS Dependency, HTML Native Details) -->
+    <section class="py-20 px-8 bg-white border-b border-slate-100">
+        <div class="max-w-3xl mx-auto space-y-8 text-left">
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900">Frequently asked questions</h2>
+                <p class="text-sm text-slate-500">Everything you need to know about our classes, programs, and support groups.</p>
+            </div>
+            <div class="divide-y divide-slate-200 border-t border-b border-slate-200">
+                
+            <details class="group py-4">
+                <summary class="flex justify-between items-center font-bold text-sm text-slate-800 cursor-pointer list-none focus:outline-none">
+                    <span>Are your classes free?</span>
+                    <span class="text-slate-400 group-open:rotate-180 transition-transform duration-200">+</span>
+                </summary>
+                <p class="mt-3 text-sm text-slate-500 leading-relaxed">Yes! Every class we offer is 100% free to join.</p>
+            </details>
+            <details class="group py-4">
+                <summary class="flex justify-between items-center font-bold text-sm text-slate-800 cursor-pointer list-none focus:outline-none">
+                    <span>Are they online?</span>
+                    <span class="text-slate-400 group-open:rotate-180 transition-transform duration-200">+</span>
+                </summary>
+                <p class="mt-3 text-sm text-slate-500 leading-relaxed">Yes, all of our active programs are completely virtual, allowing participation from any location.</p>
+            </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- Zero-Dependency, Scalable Carousel Vanilla JS Controller -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-carousel]').forEach(carousel => {
+                let currentIndex = 0;
+                const slides = carousel.querySelectorAll('[data-slide]');
+                if (slides.length <= 1) {
+                    // Hide arrows if only 1 slide is present
+                    const prevBtn = carousel.querySelector('[data-prev]');
+                    const nextBtn = carousel.querySelector('[data-next]');
+                    if (prevBtn) prevBtn.style.display = 'none';
+                    if (nextBtn) nextBtn.style.display = 'none';
+                    return;
+                }
+
+                const updateSlides = () => {
+                    slides.forEach((slide, index) => {
+                        if (index === currentIndex) {
+                            slide.classList.remove('hidden');
+                        } else {
+                            slide.classList.add('hidden');
+                        }
+                    });
+                };
+
+                carousel.querySelector('[data-prev]').addEventListener('click', () => {
+                    currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+                    updateSlides();
+                });
+
+                carousel.querySelector('[data-next]').addEventListener('click', () => {
+                    currentIndex = (currentIndex + 1) % slides.length;
+                    updateSlides();
+                });
+            });
+        });
+    </script>
 </body>
 </html>
