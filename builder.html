@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monolith Builder - Step 5 (Split Block)</title>
+    <title>Monolith Builder - Step 6 (Card Grid)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font -->
@@ -52,11 +52,31 @@
                             text: 'Our specialized solutions help groups organize complicated workflows. We establish stable, structural grids that map precisely to operational goals.',
                             primaryBtnText: 'Get Started',
                             secondaryBtnText: 'Learn More',
-                            flipLayout: false, // false = Image Left, true = Image Right
+                            flipLayout: false, 
                             showTitle: true,
                             showText: true,
                             showPrimaryBtn: true,
                             showSecondaryBtn: true
+                        }
+                    },
+                    card_grid: {
+                        name: 'Dynamic Card Grid',
+                        icon: '🎛️',
+                        defaultData: {
+                            title: 'Analytics that feels like it\'s from the future',
+                            subtitle: 'Features',
+                            columnsCount: '3', // '2', '3', or '4'
+                            showBorders: true,
+                            showIcons: true,
+                            showImages: true,
+                            showTitles: true,
+                            showBodies: true,
+                            showButtons: true,
+                            items: [
+                                { icon: '🛡️', title: 'Share team inboxes', desc: 'Whether you have a team of 2 or 200, our shared team inboxes keep everyone on the same page.', btnText: 'Learn More' },
+                                { icon: '⚡', title: 'Deliver instant answers', desc: 'An all-in-one customer service platform that helps you balance everything your customers need.', btnText: 'Learn More' },
+                                { icon: '📈', title: 'Manage with reports', desc: 'Measure what matters with Untitled\'s easy-to-use reports. You can filter, export, and analyze.', btnText: 'Learn More' }
+                            ]
                         }
                     },
                     text_content: {
@@ -156,6 +176,20 @@
                     this.sections[secIndex].data.items.splice(itemIndex, 1);
                 },
 
+                // Card Grid Item Operations
+                addCardItem(index) {
+                    this.sections[index].data.items.push({
+                        icon: '✨',
+                        title: 'New Feature Title',
+                        desc: 'This is a description of the newly added card feature component details.',
+                        btnText: 'Learn More'
+                    });
+                },
+
+                removeCardItem(secIndex, itemIndex) {
+                    this.sections[secIndex].data.items.splice(itemIndex, 1);
+                },
+
                 // Clean static HTML exporter
                 generateCleanExport() {
                     let bodyContent = '';
@@ -179,12 +213,10 @@
     <!-- Split Media Block -->
     <section class="py-20 px-8 bg-white border-b border-slate-100">
         <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-            <!-- Left/Right Adaptive Graphic -->
             <div class="aspect-video bg-slate-200 border border-slate-300 rounded-lg flex flex-col items-center justify-center p-4 text-center ${imageOrderClass}">
                 <span class="text-2xl text-slate-400 mb-1">🖼️</span>
                 <span class="text-[10px] text-slate-400 font-mono font-bold uppercase tracking-wider">[Image Frame Placeholder]</span>
             </div>
-            <!-- Left/Right Content Grid -->
             <div class="space-y-6 text-left ${textOrderClass}">
                 ${d.showTitle ? `<h2 class="text-3xl font-extrabold tracking-tight text-slate-900">${d.title}</h2>` : ''}
                 ${d.showText ? `<p class="text-sm text-slate-500 leading-relaxed">${d.text}</p>` : ''}
@@ -193,6 +225,45 @@
                     ${d.showPrimaryBtn ? `<a href="#" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-5 py-3 rounded transition inline-block">${d.primaryBtnText}</a>` : ''}
                     ${d.showSecondaryBtn ? `<a href="#" class="border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs px-5 py-3 rounded transition inline-block">${d.secondaryBtnText}</a>` : ''}
                 </div>` : ''}
+            </div>
+        </div>
+    </section>`;
+                        } else if (section.type === 'card_grid') {
+                            // Column counts mapping to responsive grid CSS classes
+                            let gridColsClass = 'grid-cols-1 md:grid-cols-3';
+                            if (d.columnsCount === '2') gridColsClass = 'grid-cols-1 md:grid-cols-2';
+                            if (d.columnsCount === '4') gridColsClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
+
+                            const cardStyleClass = d.showBorders 
+                                ? 'bg-white border border-slate-200 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow' 
+                                : 'bg-transparent py-2';
+
+                            let cardsHtml = '';
+                            d.items.forEach(item => {
+                                cardsHtml += `
+            <div class="flex flex-col text-left ${cardStyleClass}">
+                ${d.showIcons ? `<span class="text-3xl block mb-4">${item.icon}</span>` : ''}
+                ${d.showImages ? `
+                <div class="aspect-video bg-slate-100 border border-slate-200 rounded flex flex-col items-center justify-center p-3 text-center mb-5 shrink-0">
+                    <span class="text-lg text-slate-400 mb-0.5">🖼️</span>
+                    <span class="text-[8px] text-slate-400 font-mono uppercase tracking-wider font-bold">[Card Media]</span>
+                </div>` : ''}
+                ${d.showTitles ? `<h3 class="font-bold text-lg text-slate-900 mb-2">${item.title}</h3>` : ''}
+                ${d.showBodies ? `<p class="text-sm text-slate-500 leading-relaxed mb-4 flex-grow">${item.desc}</p>` : ''}
+                ${d.showButtons ? `<div class="mt-auto pt-2"><a href="#" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition flex items-center gap-1"><span>${item.btnText}</span><span>&rarr;</span></a></div>` : ''}
+            </div>`;
+                            });
+
+                            bodyContent += `
+    <!-- Dynamic Card Grid -->
+    <section class="py-20 px-8 bg-slate-50 border-b border-slate-100">
+        <div class="max-w-6xl mx-auto space-y-16">
+            <div class="text-center space-y-2">
+                <span class="text-sm font-semibold text-indigo-600 uppercase tracking-wider">${d.subtitle}</span>
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900">${d.title}</h2>
+            </div>
+            <div class="grid ${gridColsClass} gap-8">
+                ${cardsHtml}
             </div>
         </div>
     </section>`;
@@ -303,98 +374,4 @@ ${bodyContent}
                 let currentIndex = 0;
                 const slides = carousel.querySelectorAll('[data-slide]');
                 if (slides.length <= 1) {
-                    const prevBtn = carousel.querySelector('[data-prev]');
-                    const nextBtn = carousel.querySelector('[data-next]');
-                    if (prevBtn) prevBtn.style.display = 'none';
-                    if (nextBtn) nextBtn.style.display = 'none';
-                    return;
-                }
-
-                const updateSlides = () => {
-                    slides.forEach((slide, index) => {
-                        if (index === currentIndex) {
-                            slide.classList.remove('hidden');
-                        } else {
-                            slide.classList.add('hidden');
-                        }
-                    });
-                };
-
-                carousel.querySelector('[data-prev]').addEventListener('click', () => {
-                    currentIndex = (currentIndex - 1 + slides.length) % slides.length;
-                    updateSlides();
-                });
-
-                carousel.querySelector('[data-next]').addEventListener('click', () => {
-                    currentIndex = (currentIndex + 1) % slides.length;
-                    updateSlides();
-                });
-            });
-        });
-    <\/script>
-</body>
-</html>`;
-                    
-                    this.showExportModal = true;
-                },
-
-                copyToClipboard() {
-                    navigator.clipboard.writeText(this.generatedCode).then(() => {
-                        this.copyStatus = '✅ Copied!';
-                        setTimeout(() => this.copyStatus = 'Copy Code', 2000);
-                    }).catch(() => {
-                        const el = document.createElement('textarea');
-                        el.value = this.generatedCode;
-                        document.body.appendChild(el);
-                        el.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(el);
-                        this.copyStatus = '✅ Copied!';
-                        setTimeout(() => this.copyStatus = 'Copy Code', 2000);
-                    });
-                }
-            }));
-        });
-    </script>
-    <!-- Load Alpine after logic is defined -->
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body class="bg-slate-900 text-slate-100 overflow-hidden h-screen flex flex-col" x-data="builderApp">
-
-    <!-- HEADER -->
-    <header class="bg-slate-950 border-b border-slate-800 h-14 flex items-center justify-between px-6 shrink-0">
-        <h1 class="text-sm font-bold text-white tracking-wide">Monolith Builder</h1>
-        <button @click="generateCleanExport()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-1.5 rounded transition shadow-lg shadow-indigo-600/20">
-            ⚡ Export Clean Code
-        </button>
-    </header>
-
-    <!-- MAIN WORKSPACE -->
-    <div class="flex-grow flex overflow-hidden">
-        
-        <!-- LEFT SIDEBAR: Library & Layers -->
-        <aside class="w-64 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0">
-            <!-- Add Components -->
-            <div class="p-3 border-b border-slate-800">
-                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">1. Library</h2>
-                <div class="space-y-2">
-                    <template x-for="(tpl, type) in templates" :key="type">
-                        <button @click="addSection(type)" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 p-2 rounded text-left text-xs text-slate-300 flex justify-between">
-                            <span><span x-text="tpl.icon" class="mr-2"></span><span x-text="tpl.name"></span></span>
-                            <span class="text-slate-500">+</span>
-                        </button>
-                    </template>
-                </div>
-            </div>
-
-            <!-- Layer Manager -->
-            <div class="p-3 flex-grow overflow-y-auto">
-                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">2. Layout</h2>
-                
-                <template x-if="sections.length === 0">
-                    <p class="text-xs text-slate-600 italic mt-4">Canvas is empty.</p>
-                </template>
-
-                <div class="space-y-1">
-                    <template x-for="(section, index) in sections" :key="section.id">
-                        <div class="flex items-center justify-between border
+                    const prevBtn = carousel.querySelector('[data-prev]')
