@@ -206,18 +206,14 @@
       <h2 id="s1h">Your Credit Score</h2>
       <div class="why">Your credit score is one of the first things a lender looks at. You don't need perfect credit to invest in real estate — but knowing where you stand helps us understand your options. <strong>Most DSCR lenders require a minimum score of 620 to 660.</strong></div>
       <div class="question">Do you know your current credit score?</div>
-      <div class="field">
-        <label class="field-label" for="credit">Credit score range</label>
-        <select id="credit" aria-required="true">
-          <option value="">Select an option…</option>
-          <option value="unknown">I do not know my score</option>
-          <option value="below580">Below 580</option>
-          <option value="580-619">580 to 619</option>
-          <option value="620-659">620 to 659</option>
-          <option value="660-699">660 to 699</option>
-          <option value="700-739">700 to 739</option>
-          <option value="740+">740 and above</option>
-        </select>
+      <div class="radio-row" role="radiogroup" aria-label="Credit score range" style="flex-direction:column">
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-unknown" value="unknown"><label for="cr-unknown">I do not know my score</label></div>
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-below580" value="below580"><label for="cr-below580">Below 580</label></div>
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-580" value="580-619"><label for="cr-580">580 to 619</label></div>
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-620" value="620-659"><label for="cr-620">620 to 659</label></div>
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-660" value="660-699"><label for="cr-660">660 to 699</label></div>
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-700" value="700-739"><label for="cr-700">700 to 739</label></div>
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-740" value="740+"><label for="cr-740">740 and above</label></div>
       </div>
       <div class="error" id="err-1">Please select an option.</div>
       <div class="btn-row">
@@ -230,17 +226,13 @@
       <h2 id="s2h">Your Down Payment</h2>
       <div class="why">Unlike buying a home to live in — where you might put down as little as 3% — investment properties typically require <strong>20% to 25% down</strong>. On a $150,000 property that means having $30,000 to $37,500 available. Knowing what you have ready helps us map your timeline.</div>
       <div class="question">How much do you currently have available for a down payment?</div>
-      <div class="field">
-        <label class="field-label" for="down">Down payment available</label>
-        <select id="down" aria-required="true">
-          <option value="">Select an option…</option>
-          <option value="saving">I am still saving</option>
-          <option value="lt10k">Less than $10,000</option>
-          <option value="10-19k">$10,000 to $19,999</option>
-          <option value="20-29k">$20,000 to $29,999</option>
-          <option value="30-49k">$30,000 to $49,999</option>
-          <option value="50k+">$50,000 or more</option>
-        </select>
+      <div class="radio-row" role="radiogroup" aria-label="Down payment available" style="flex-direction:column">
+        <div class="radio-opt"><input type="radio" name="down" id="dn-saving" value="saving"><label for="dn-saving">I am still saving</label></div>
+        <div class="radio-opt"><input type="radio" name="down" id="dn-lt10k" value="lt10k"><label for="dn-lt10k">Less than $10,000</label></div>
+        <div class="radio-opt"><input type="radio" name="down" id="dn-10" value="10-19k"><label for="dn-10">$10,000 to $19,999</label></div>
+        <div class="radio-opt"><input type="radio" name="down" id="dn-20" value="20-29k"><label for="dn-20">$20,000 to $29,999</label></div>
+        <div class="radio-opt"><input type="radio" name="down" id="dn-30" value="30-49k"><label for="dn-30">$30,000 to $49,999</label></div>
+        <div class="radio-opt"><input type="radio" name="down" id="dn-50" value="50k+"><label for="dn-50">$50,000 or more</label></div>
       </div>
       <div class="error" id="err-2">Please select an option.</div>
       <div class="btn-row">
@@ -313,17 +305,13 @@
       <h2 id="s5h">Your Income Situation</h2>
       <div class="why">One of the biggest advantages of a DSCR loan is that it <strong>does not require you to show personal income</strong>. That means it works well for people who are self-employed, contractors, or whose tax returns don't show strong income. Knowing your situation helps us give you the most accurate picture.</div>
       <div class="question">Which best describes your current income situation?</div>
-      <div class="field">
-        <label class="field-label" for="income">Income type</label>
-        <select id="income" aria-required="true">
-          <option value="">Select an option…</option>
-          <option value="w2">W2 Employee — I receive a regular paycheck</option>
-          <option value="self">Self-Employed — I own a business or freelance</option>
-          <option value="1099">1099 Contractor — I receive contractor payments</option>
-          <option value="retired">Retired or Fixed Income</option>
-          <option value="between">Currently between jobs or building income</option>
-          <option value="prefer">Prefer not to say</option>
-        </select>
+      <div class="radio-row" role="radiogroup" aria-label="Income type" style="flex-direction:column">
+        <div class="radio-opt"><input type="radio" name="income" id="in-w2" value="w2"><label for="in-w2">W2 Employee — I receive a regular paycheck</label></div>
+        <div class="radio-opt"><input type="radio" name="income" id="in-self" value="self"><label for="in-self">Self-Employed — I own a business or freelance</label></div>
+        <div class="radio-opt"><input type="radio" name="income" id="in-1099" value="1099"><label for="in-1099">1099 Contractor — I receive contractor payments</label></div>
+        <div class="radio-opt"><input type="radio" name="income" id="in-retired" value="retired"><label for="in-retired">Retired or Fixed Income</label></div>
+        <div class="radio-opt"><input type="radio" name="income" id="in-between" value="between"><label for="in-between">Currently between jobs or building income</label></div>
+        <div class="radio-opt"><input type="radio" name="income" id="in-prefer" value="prefer"><label for="in-prefer">Prefer not to say</label></div>
       </div>
       <div class="error" id="err-5">Please select an option.</div>
       <div class="btn-row">
@@ -337,17 +325,13 @@
       <h2 id="s6h">Your Timeline</h2>
       <div class="why">Knowing when you want to move helps us point you toward the right next step. <strong>There's no wrong answer here</strong> — whether you want to move fast or are still learning, we can map a path that fits where you are.</div>
       <div class="question">When are you hoping to purchase your first investment property?</div>
-      <div class="field">
-        <label class="field-label" for="timeline">Target timeline</label>
-        <select id="timeline" aria-required="true">
-          <option value="">Select an option…</option>
-          <option value="asap">As soon as possible — I am ready to move</option>
-          <option value="3m">Within the next 3 months</option>
-          <option value="6m">Within the next 6 months</option>
-          <option value="12m">Within the next 12 months</option>
-          <option value="learning">I am still learning and exploring</option>
-          <option value="unsure">I am not sure yet</option>
-        </select>
+      <div class="radio-row" role="radiogroup" aria-label="Target timeline" style="flex-direction:column">
+        <div class="radio-opt"><input type="radio" name="timeline" id="tl-asap" value="asap"><label for="tl-asap">As soon as possible — I am ready to move</label></div>
+        <div class="radio-opt"><input type="radio" name="timeline" id="tl-3m" value="3m"><label for="tl-3m">Within the next 3 months</label></div>
+        <div class="radio-opt"><input type="radio" name="timeline" id="tl-6m" value="6m"><label for="tl-6m">Within the next 6 months</label></div>
+        <div class="radio-opt"><input type="radio" name="timeline" id="tl-12m" value="12m"><label for="tl-12m">Within the next 12 months</label></div>
+        <div class="radio-opt"><input type="radio" name="timeline" id="tl-learning" value="learning"><label for="tl-learning">I am still learning and exploring</label></div>
+        <div class="radio-opt"><input type="radio" name="timeline" id="tl-unsure" value="unsure"><label for="tl-unsure">I am not sure yet</label></div>
       </div>
       <div class="error" id="err-6">Please select an option.</div>
       <div class="btn-row">
@@ -434,12 +418,12 @@
     clearErr(step);
     switch(step){
       case 1: {
-        const v = $('#credit').value;
+        const v = (document.querySelector('input[name=credit]:checked')||{}).value||'';
         if(!v){ showErr(1); return false; }
         state.credit = v; return true;
       }
       case 2: {
-        const v = $('#down').value;
+        const v = (document.querySelector('input[name=down]:checked')||{}).value||'';
         if(!v){ showErr(2); return false; }
         state.down = v; return true;
       }
@@ -459,12 +443,12 @@
       }
       case 4: return true;
       case 5: {
-        const v = $('#income').value;
+        const v = (document.querySelector('input[name=income]:checked')||{}).value||'';
         if(!v){ showErr(5); return false; }
         state.income = v; return true;
       }
       case 6: {
-        const v = $('#timeline').value;
+        const v = (document.querySelector('input[name=timeline]:checked')||{}).value||'';
         if(!v){ showErr(6); return false; }
         state.timeline = v; return true;
       }
@@ -634,7 +618,7 @@
   function reset(){
     Object.assign(state,{step:1,firstName:'',email:'',credit:'',down:'',hasProp:'',price:null,rent:null,income:'',timeline:'',dscr:0});
     $('#firstName').value=''; $('#email').value='';
-    $('#credit').value=''; $('#down').value=''; $('#income').value=''; $('#timeline').value='';
+    document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
     $('#price').value=''; $('#rent').value='';
     document.querySelectorAll('input[name=hasProp]').forEach(r=>r.checked=false);
     $('#propYes').style.display='none'; $('#propNo').style.display='none';
