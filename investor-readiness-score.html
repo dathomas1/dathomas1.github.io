@@ -113,15 +113,33 @@
 
   /* DSCR breakdown */
   .breakdown{background:var(--surface);border-radius:14px;padding:1.25rem;margin-bottom:1rem}
-  .breakdown .row{display:flex;justify-content:space-between;padding:.55rem 0;border-bottom:1px dashed var(--border);font-size:.95rem}
+  .breakdown .row{display:flex;justify-content:space-between;padding:.55rem 0;border-bottom:1px dashed var(--border);font-size:1.25rem}
   .breakdown .row:last-child{border-bottom:none}
   .breakdown .row .label{color:var(--muted)}
   .breakdown .row .val{font-weight:600}
+  .breakdown .slider-row{padding:.75rem 0;border-bottom:1px dashed var(--border)}
+  .breakdown .slider-row:last-of-type{border-bottom:none}
+  .breakdown .slider-row .head{display:flex;justify-content:space-between;align-items:baseline;font-size:.95rem;margin-bottom:.4rem}
+  .breakdown .slider-row .head .label{color:var(--muted)}
+  .breakdown .slider-row .head .val{font-weight:700;color:var(--ink);font-family:'Plus Jakarta Sans'}
+  .breakdown .slider-row input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:99px;
+    background:var(--border);outline:none;margin:.25rem 0;
+  }
+  .breakdown .slider-row input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;
+    background:var(--primary);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:pointer;
+  }
+  .breakdown .slider-row input[type=range]::-moz-range-thumb{
+    width:26px;height:26px;border-radius:50%;background:var(--primary);border:3px solid #fff;
+    box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:pointer;
+  }
+  .breakdown .slider-row input[type=range]:focus-visible{outline:2px solid var(--primary);outline-offset:4px;border-radius:99px}
   .dscr-display{
     text-align:center;padding:1.25rem;background:linear-gradient(135deg,var(--primary),var(--primary-dark));
     color:var(--white);border-radius:14px;margin-bottom:1rem;
   }
-  .dscr-display .ratio{font-size:2.75rem;font-weight:800;font-family:'Plus Jakarta Sans';line-height:1}
+  .dscr-display .ratio{font-size:2.75rem;font-weight:800;font-family:'Plus Jakarta Sans';line-height:1;transition:color .2s}
   .dscr-display .lbl{font-size:.85rem;text-transform:uppercase;letter-spacing:.1em;opacity:.9;margin-bottom:.35rem}
   .dscr-interp{text-align:center;font-weight:600;color:var(--ink);padding:.5rem 0}
 
@@ -224,7 +242,7 @@
     <!-- STEP 2 -->
     <section class="step" data-step="2" aria-labelledby="s2h">
       <h2 id="s2h">Your Down Payment</h2>
-      <div class="why">Unlike buying a home to live in — where you might put down as little as 3% — investment properties typically require <strong>20% to 25% down</strong>. On a $225,000 property that means having $45,000 to $56,500 available. Knowing what you have ready helps us map your timeline.</div>
+      <div class="why">Unlike buying a home to live in — where you might put down as little as 3% — investment properties typically require <strong>20% to 25% down</strong>. On a $225,000 property that means having $45,000 to $56,250 available. Knowing what you have ready helps us map your timeline.</div>
       <div class="question">How much do you currently have available for a down payment?</div>
       <div class="radio-row" role="radiogroup" aria-label="Down payment available" style="flex-direction:column">
         <div class="radio-opt"><input type="radio" name="down" id="dn-saving" value="saving"><label for="dn-saving">I am still saving</label></div>
@@ -264,13 +282,13 @@
         </div>
         <div class="field">
           <label class="field-label" for="rent">What do you think this property could rent for per month $</label>
-          <input id="rent" type="number" min="0" inputmode="numeric" placeholder="1400" />
+          <input id="rent" type="number" min="0" inputmode="numeric" placeholder="2000" />
         </div>
       </div>
 
       <div id="propNo" style="display:none;margin-top:1.25rem">
         <div class="why" style="background:#eafdfe;border-left-color:var(--primary-dark);color:var(--ink)">
-          No problem. We'll use a typical example property ($225,000 purchase, $1,400/mo rent) to show you how the numbers work so you can apply this when you find your deal.
+          No problem. We'll use a typical example property ($225,000 purchase, $2,000/mo rent) to show you how the numbers work so you can apply this when you find your deal.
         </div>
       </div>
 
@@ -372,7 +390,7 @@
     firstName: '', email: '',
     credit: '', down: '', hasProp: '', price: null, rent: null,
     income: '', timeline: '',
-    dscr: 0, pitia: 0, loan:0, pi:0, tax:0, ins:0, priceUsed:0, rentUsed:0
+    dscr: 0, pitia: 0, loan:0, pi:0, tax:0, ins:0, hoa:0, priceUsed:0, rentUsed:0, dscrSeededFor:''
   };
 
   const $ = s => document.querySelector(s);
@@ -435,7 +453,7 @@
           if(!p || p<=0 || !r || r<=0){ showErr(3,'Please enter a valid purchase price and monthly rent.'); return false; }
           state.price = p; state.rent = r;
         } else {
-          state.price = 225000; state.rent = 1400;
+          state.price = 225000; state.rent = 2000;
         }
         calcDSCR();
         renderDSCR();
@@ -463,19 +481,33 @@
     return true;
   }
 
+  function piFromLoan(loan){
+    const r = 0.075/12, n = 360;
+    if(loan<=0) return 0;
+    return loan * (r*Math.pow(1+r,n)) / (Math.pow(1+r,n)-1);
+  }
+
   function calcDSCR(){
     const price = state.price || 225000;
-    const rent = state.rent || 1400;
-    const down = price * 0.25;
-    const loan = price - down;
-    const r = 0.075/12;
-    const n = 360;
-    const pi = loan * (r*Math.pow(1+r,n)) / (Math.pow(1+r,n)-1);
-    const tax = (price * 0.012)/12;
-    const ins = (price * 0.008)/12;
-    const pitia = pi + tax + ins;
-    const dscr = Math.round((rent/pitia)*100)/100;
-    Object.assign(state,{loan,pi,tax,ins,pitia,dscr,priceUsed:price,rentUsed:rent});
+    const rent = state.rent || 2000;
+    const seedKey = price+'|'+rent;
+    // Only reseed defaults when price/rent changed (preserves user slider tweaks)
+    if(state.dscrSeededFor !== seedKey){
+      state.loan = Math.round(price * 0.75);
+      state.tax  = Math.round((price * 0.012)/12);
+      state.ins  = Math.round((price * 0.008)/12);
+      state.hoa  = 0;
+      state.rentUsed = Math.round(rent);
+      state.priceUsed = price;
+      state.dscrSeededFor = seedKey;
+    }
+    recomputeDSCR();
+  }
+
+  function recomputeDSCR(){
+    state.pi = piFromLoan(state.loan);
+    state.pitia = state.pi + state.tax + state.ins + state.hoa;
+    state.dscr = state.pitia>0 ? Math.round((state.rentUsed/state.pitia)*100)/100 : 0;
   }
 
   function dscrInterp(d){
@@ -485,24 +517,71 @@
     return {txt:'Gap — the rent does not yet cover the costs on this property',cls:'bad'};
   }
 
-  function renderDSCR(){
-    const b = $('#breakdown');
-    b.innerHTML = `
-      <div class="row"><span class="label">Estimated loan amount</span><span class="val">${money(state.loan)}</span></div>
-      <div class="row"><span class="label">Monthly principal &amp; interest</span><span class="val">${money(state.pi)}</span></div>
-      <div class="row"><span class="label">Monthly taxes</span><span class="val">${money(state.tax)}</span></div>
-      <div class="row"><span class="label">Monthly insurance</span><span class="val">${money(state.ins)}</span></div>
-      <div class="row"><span class="label">HOA / Associations</span><span class="val">$0</span></div>
-      <div class="row"><span class="label"><strong>Total PITIA</strong></span><span class="val"><strong>${money(state.pitia)}</strong></span></div>
-      <div class="row"><span class="label">Monthly rent</span><span class="val">${money(state.rentUsed)}</span></div>
-    `;
+  function sliderRow(key, label, min, max, step, value){
+    return `<div class="slider-row">
+      <div class="head"><span class="label">${label}</span><span class="val" id="sv-${key}">${money(value)}</span></div>
+      <input type="range" id="sl-${key}" min="${min}" max="${max}" step="${step}" value="${value}"
+             aria-label="${label}" aria-valuetext="${money(value)}">
+    </div>`;
+  }
+
+  function updateDSCRDisplay(){
+    $('#sv-pi').textContent = money(state.pi);
+    $('#sv-pitia').textContent = money(state.pitia);
     $('#dscrRatio').textContent = state.dscr.toFixed(2);
     $('#dscrInterp').textContent = dscrInterp(state.dscr).txt;
   }
 
+  function renderDSCR(){
+    const price = state.priceUsed || 225000;
+    const loanMax = Math.max(500000, Math.round(price * 1.25));
+    const b = $('#breakdown');
+    b.innerHTML = `
+      ${sliderRow('loan','Estimated loan amount',25000,loanMax,1000,state.loan)}
+      <div class="row"><span class="label">Monthly principal &amp; interest</span><span class="val" id="sv-pi">${money(state.pi)}</span></div>
+      ${sliderRow('tax','Monthly taxes',0,1500,10,state.tax)}
+      ${sliderRow('ins','Monthly insurance',0,800,5,state.ins)}
+      ${sliderRow('hoa','HOA / Associations',0,800,10,state.hoa)}
+      <div class="row"><span class="label"><strong>Total PITIA</strong></span><span class="val"><strong id="sv-pitia">${money(state.pitia)}</strong></span></div>
+      ${sliderRow('rent','Monthly rent',300,6000,25,state.rentUsed)}
+    `;
+    $('#dscrRatio').textContent = state.dscr.toFixed(2);
+    $('#dscrInterp').textContent = dscrInterp(state.dscr).txt;
+
+    const bind = (key, stateKey) => {
+      const el = document.getElementById('sl-'+key);
+      el.addEventListener('input', () => {
+        const v = parseFloat(el.value) || 0;
+        state[stateKey] = v;
+        document.getElementById('sv-'+key).textContent = money(v);
+        el.setAttribute('aria-valuetext', money(v));
+        recomputeDSCR();
+        updateDSCRDisplay();
+      });
+    };
+    bind('loan','loan');
+    bind('tax','tax');
+    bind('ins','ins');
+    bind('hoa','hoa');
+    bind('rent','rentUsed');
+  }
+
   // Scoring
   const creditPts = {unknown:0,'below580':1,'580-619':2,'620-659':3,'660-699':4,'700-739':5,'740+':6};
-  const downPts = {saving:0,lt10k:1,'10-19k':2,'20-39k':3,'40-59k':4,'60k+':5};
+  const downDollars = {lt10k:5000,'10-19k':15000,'20-39k':30000,'40-59k':50000,'60k+':75000};
+  function downPctOf(bucket, price){
+    if(bucket==='saving' || !bucket) return 0;
+    return (downDollars[bucket]||0) / (price || 225000);
+  }
+  function downPts(bucket, price){
+    if(bucket==='saving' || !bucket) return 0;
+    const pct = downPctOf(bucket, price);
+    if(pct >= 0.25) return 5;
+    if(pct >= 0.20) return 4;
+    if(pct >= 0.15) return 3;
+    if(pct >= 0.10) return 2;
+    return 1;
+  }
   const timelinePts = {unsure:0,learning:1,'12m':2,'6m':3,'3m':4,asap:5};
   function dscrPts(d){ if(d>=1.25)return 4; if(d>=1.0)return 3; if(d>=0.85)return 2; return 0; }
 
@@ -538,9 +617,11 @@
     if(c==='620-659') return {i:'⚠️',t:'You\'re at the edge — some lenders will work with you, some won\'t.'};
     return {i:'❌',t:'A bit of credit work first will open many more doors.'};
   }
-  function downStatus(d){
-    if(['40-59k','60k+'].includes(d)) return {i:'✅',t:'You have enough for a 25% down payment on a starter investment property.'};
-    if(d==='20-39k') return {i:'⚠️',t:'You\'re close — a smaller property or a bit more savings gets you there.'};
+  function downStatus(d, price){
+    if(d==='saving' || !d) return {i:'❌',t:'Building your down payment is the biggest lever you can pull right now.'};
+    const pct = downPctOf(d, price);
+    if(pct >= 0.20) return {i:'✅',t:'You have enough for a ~20–25% down payment on your target price.'};
+    if(pct >= 0.10) return {i:'⚠️',t:'You\'re partway there for your target price — closing the gap is the next step.'};
     return {i:'❌',t:'Building your down payment is the biggest lever you can pull right now.'};
   }
   function dscrStatus(v){
@@ -555,10 +636,10 @@
   }
 
   function renderResults(){
-    const score = (creditPts[state.credit]||0) + (downPts[state.down]||0) + dscrPts(state.dscr) + (timelinePts[state.timeline]||0);
+    const score = (creditPts[state.credit]||0) + downPts(state.down, state.price) + dscrPts(state.dscr) + (timelinePts[state.timeline]||0);
     const t = tier(score);
     const cs = creditStatus(state.credit);
-    const ds = downStatus(state.down);
+    const ds = downStatus(state.down, state.price);
     const xs = dscrStatus(state.dscr);
     const ts = timeStatus(state.timeline);
     const pct = (score/20)*100;
@@ -616,7 +697,7 @@
   }
 
   function reset(){
-    Object.assign(state,{step:1,firstName:'',email:'',credit:'',down:'',hasProp:'',price:null,rent:null,income:'',timeline:'',dscr:0});
+    Object.assign(state,{step:1,firstName:'',email:'',credit:'',down:'',hasProp:'',price:null,rent:null,income:'',timeline:'',dscr:0,dscrSeededFor:''});
     $('#firstName').value=''; $('#email').value='';
     document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
     $('#price').value=''; $('#rent').value='';
