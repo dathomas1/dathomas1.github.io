@@ -260,7 +260,7 @@
       <div id="propYes" style="display:none;margin-top:1.25rem">
         <div class="field">
           <label class="field-label" for="price">Estimated purchase price $</label>
-          <input id="price" type="number" min="0" inputmode="numeric" placeholder="150000" />
+          <input id="price" type="number" min="0" inputmode="numeric" placeholder="225000" />
         </div>
         <div class="field">
           <label class="field-label" for="rent">What do you think this property could rent for per month $</label>
@@ -270,7 +270,7 @@
 
       <div id="propNo" style="display:none;margin-top:1.25rem">
         <div class="why" style="background:#eafdfe;border-left-color:var(--primary-dark);color:var(--ink)">
-          No problem. We'll use a typical example property ($150,000 purchase, $1,400/mo rent) to show you how the numbers work so you can apply this when you find your deal.
+          No problem. We'll use a typical example property ($225,000 purchase, $1,400/mo rent) to show you how the numbers work so you can apply this when you find your deal.
         </div>
       </div>
 
@@ -435,7 +435,7 @@
           if(!p || p<=0 || !r || r<=0){ showErr(3,'Please enter a valid purchase price and monthly rent.'); return false; }
           state.price = p; state.rent = r;
         } else {
-          state.price = 150000; state.rent = 1400;
+          state.price = 225000; state.rent = 1400;
         }
         calcDSCR();
         renderDSCR();
@@ -464,7 +464,7 @@
   }
 
   function calcDSCR(){
-    const price = state.price || 150000;
+    const price = state.price || 225000;
     const rent = state.rent || 1400;
     const down = price * 0.25;
     const loan = price - down;
