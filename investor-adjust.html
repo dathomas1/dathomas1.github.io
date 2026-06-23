@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Investor Readiness Score — Darnell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#3fdbf1;
+    --primary-dark:#1fb8ce;
+    --secondary:#fcfcd4;
+    --ink:#0f1f2e;          /* dark text */
+    --muted:#5a6b7a;        /* subtext */
+    --surface:#f5f8fb;      /* light bg */
+    --card:#ffffff;
+    --border:#e3eaf0;
+    --success:#22a06b;
+    --warning:#e89a2b;
+    --danger:#d94c4c;
+    --white:#ffffff;
+    --shadow:0 10px 30px rgba(15,31,46,0.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--surface);
+    color:var(--ink);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,h4{font-family:'Plus Jakarta Sans',sans-serif;color:var(--ink);margin:0 0 .5rem;line-height:1.2}
+  p{margin:0 0 1rem}
+  .app{max-width:640px;margin:0 auto;padding:1.25rem 1rem 3rem}
+  @media(min-width:768px){.app{padding:2.5rem 1.5rem 4rem}}
+
+  /* Header */
+  .header{text-align:center;margin-bottom:1.5rem}
+  .avatar{
+    width:84px;height:84px;border-radius:50%;
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    margin:0 auto .75rem;display:flex;align-items:center;justify-content:center;
+    box-shadow:var(--shadow);
+  }
+  .avatar svg{width:54px;height:54px}
+  .name{font-weight:700;font-family:'Plus Jakarta Sans';font-size:1.05rem;color:var(--ink);margin-bottom:1rem}
+  h1.title{font-size:1.7rem;font-weight:800;margin-bottom:.5rem}
+  @media(min-width:768px){h1.title{font-size:2.1rem}}
+  .subtitle{color:var(--muted);font-size:.98rem;max-width:520px;margin:0 auto}
+
+  /* Progress */
+  .progress-wrap{margin:1.75rem 0 1.25rem}
+  .progress-meta{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-bottom:.4rem;font-weight:500;letter-spacing:.02em;text-transform:uppercase}
+  .progress-bar{height:8px;background:var(--border);border-radius:99px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-dark));border-radius:99px;width:0%;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+
+  /* Card / Step */
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:18px;
+    padding:1.5rem;box-shadow:var(--shadow);
+  }
+  @media(min-width:768px){.card{padding:2.25rem}}
+  .step{display:none;animation:fadeUp .45s cubic-bezier(.2,.8,.2,1)}
+  .step.active{display:block}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  .why{
+    background:var(--secondary);
+    border-radius:12px;padding:1rem 1.1rem;font-size:.93rem;color:#5a5a2a;
+    margin:0 0 1.25rem;border-left:4px solid var(--primary);
+  }
+  .why strong{color:var(--ink)}
+  label.field-label{display:block;font-weight:600;color:var(--ink);margin-bottom:.4rem;font-size:.95rem}
+  .question{font-weight:700;font-family:'Plus Jakarta Sans';font-size:1.05rem;margin:.5rem 0 .85rem}
+  input[type=text],input[type=email],input[type=number],select{
+    width:100%;padding:.85rem 1rem;border:1.5px solid var(--border);border-radius:10px;
+    font-size:1rem;font-family:inherit;background:#fff;color:var(--ink);
+    transition:border-color .2s,box-shadow .2s;
+  }
+  input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(63,219,241,.18)}
+  .field{margin-bottom:1rem}
+
+  /* Radios */
+  .radio-row{display:flex;gap:.75rem;flex-wrap:wrap}
+  .radio-opt{flex:1;min-width:140px}
+  .radio-opt input{position:absolute;opacity:0;pointer-events:none}
+  .radio-opt label{
+    display:block;padding:.95rem 1rem;border:1.5px solid var(--border);border-radius:10px;
+    text-align:center;cursor:pointer;font-weight:600;transition:all .2s;background:#fff;
+  }
+  .radio-opt input:checked + label{border-color:var(--primary);background:rgba(63,219,241,.12);color:var(--ink)}
+  .radio-opt input:focus-visible + label{box-shadow:0 0 0 4px rgba(63,219,241,.18)}
+
+  .error{color:var(--danger);font-size:.85rem;margin-top:.5rem;display:none}
+  .error.show{display:block}
+
+  /* Buttons */
+  .btn-row{display:flex;gap:.75rem;margin-top:1.5rem}
+  .btn{
+    flex:1;padding:.95rem 1.25rem;border-radius:12px;border:none;cursor:pointer;
+    font-family:'Plus Jakarta Sans';font-weight:700;font-size:1rem;
+    transition:transform .15s,box-shadow .15s,background .2s;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--ink);color:var(--white)}
+  .btn-primary:hover{background:#1a2f44}
+  .btn-secondary{background:#fff;color:var(--ink);border:1.5px solid var(--border)}
+  .btn-secondary:hover{background:var(--surface)}
+
+  /* DSCR breakdown */
+  .breakdown{background:var(--surface);border-radius:14px;padding:1.25rem;margin-bottom:1rem}
+  .breakdown .row{display:flex;justify-content:space-between;padding:.55rem 0;border-bottom:1px dashed var(--border);font-size:.95rem}
+  .breakdown .row:last-child{border-bottom:none}
+  .breakdown .row .label{color:var(--muted)}
+  .breakdown .row .val{font-weight:600}
+  .breakdown .slider-row{padding:.7rem 0;border-bottom:1px dashed var(--border);font-size:.95rem}
+  .breakdown .slider-row .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.35rem}
+  .breakdown .slider-row .label{color:var(--muted)}
+  .breakdown .slider-row .val{font-weight:700;color:var(--ink)}
+  .breakdown .slider-row input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:99px;background:var(--border);outline:none}
+  .breakdown .slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--primary-dark);cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .breakdown .slider-row input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--primary-dark);cursor:pointer;border:2px solid #fff}
+  .dscr-display{
+    text-align:center;padding:1.25rem;background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    color:var(--white);border-radius:14px;margin-bottom:1rem;
+  }
+  .dscr-display .ratio{font-size:2.75rem;font-weight:800;font-family:'Plus Jakarta Sans';line-height:1;transition:color .2s}
+  .dscr-display .lbl{font-size:.85rem;text-transform:uppercase;letter-spacing:.1em;opacity:.9;margin-bottom:.35rem}
+  .dscr-interp{text-align:center;font-weight:600;color:var(--ink);padding:.5rem 0}
+
+  /* Results */
+  .tier{font-family:'Plus Jakarta Sans';font-size:2rem;font-weight:800;color:var(--primary-dark);text-align:center;margin-bottom:.25rem;letter-spacing:.02em}
+  @media(min-width:768px){.tier{font-size:2.4rem}}
+  .score-line{text-align:center;color:var(--muted);font-weight:600;margin-bottom:1rem}
+  .score-line strong{color:var(--ink)}
+  .score-bar{height:14px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:2rem}
+  .score-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-dark));border-radius:99px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+
+  .section-title{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:700;margin:2rem 0 .85rem}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:.85rem}
+  @media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+  .factor{
+    background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.1rem;
+  }
+  .factor .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem}
+  .factor .lbl{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+  .factor .icon{font-size:1.25rem}
+  .factor .answer{font-weight:700;color:var(--ink);margin-bottom:.4rem;font-family:'Plus Jakarta Sans'}
+  .factor .interp{font-size:.88rem;color:var(--muted)}
+
+  .next-step{
+    background:var(--secondary);border-radius:14px;padding:1.4rem;margin:.5rem 0;
+    border-left:4px solid var(--primary);color:#3a3a1a;
+  }
+  .income-note{
+    background:var(--surface);border-radius:12px;padding:1rem 1.15rem;font-size:.92rem;color:var(--muted);
+  }
+  .cta{
+    background:var(--ink);color:var(--white);border-radius:16px;padding:1.75rem;text-align:center;margin-top:1.25rem;
+  }
+  .cta h3{color:var(--white);font-size:1.4rem;margin-bottom:.6rem}
+  .cta p{color:rgba(255,255,255,.85);font-size:.95rem}
+  .cta .signed{font-style:italic;color:rgba(255,255,255,.7);margin-bottom:1.25rem}
+  .cta-btn{
+    display:block;width:100%;background:var(--primary);color:var(--ink);
+    padding:1.1rem 1.25rem;border-radius:12px;font-weight:800;text-decoration:none;
+    font-family:'Plus Jakarta Sans';font-size:1.05rem;transition:transform .15s,background .2s;
+  }
+  .cta-btn:hover{background:#5fe3f3;transform:translateY(-2px)}
+  .cta-fine{font-size:.78rem;color:rgba(255,255,255,.6);margin-top:.85rem}
+
+  .footer-actions{display:flex;justify-content:center;gap:1.5rem;margin-top:1.5rem;flex-wrap:wrap}
+  .footer-actions a{color:var(--muted);text-decoration:none;font-size:.88rem;border-bottom:1px dashed var(--muted);padding-bottom:1px;cursor:pointer}
+  .footer-actions a:hover{color:var(--ink);border-color:var(--ink)}
+
+  /* Print */
+  @media print{
+    body{background:#fff}
+    .progress-wrap,.btn-row,.cta-btn,.footer-actions,.cta{display:none !important}
+    .card{box-shadow:none;border:none;padding:0}
+    .header{margin-bottom:1rem}
+    .factor{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="header">
+    <div class="avatar" aria-hidden="true">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="24" r="11" fill="#fff"/>
+        <path d="M10 58c2-12 11-18 22-18s20 6 22 18" fill="#fff"/>
+      </svg>
+    </div>
+    <div class="name">Darnell</div>
+    <h1 class="title">The Investor Readiness Score</h1>
+    <p class="subtitle">Answer 7 questions and find out exactly where you stand as a first-time real estate investor — in plain language, no jargon.</p>
+  </header>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-meta"><span id="stepLabel">Step 1 of 7</span><span id="pctLabel">14%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="card">
+    <!-- STEP 1 -->
+    <section class="step active" data-step="1" aria-labelledby="s1h">
+      <h2 id="s1h">Your Credit Score</h2>
+      <div class="why">Your credit score is one of the first things a lender looks at. You don't need perfect credit to invest in real estate — but knowing where you stand helps us understand your options. <strong>Most DSCR lenders require a minimum score of 620 to 660.</strong></div>
+      <div class="question">Do you know your current credit score?</div>
+      <div class="radio-row" role="radiogroup" aria-label="Credit score range" style="flex-direction:column">
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-unknown" value="unknown"><label for="cr-unknown">I do not know my score</label></div>
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-below580" value="below580"><label for="cr-below580">Below 580</label></div>
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-580" value="580-619"><label for="cr-580">580 to 619</label></div>
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-620" value="620-659"><label for="cr-620">620 to 659</label></div>
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-660" value="660-699"><label for="cr-660">660 to 699</label></div>
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-700" value="700-739"><label for="cr-700">700 to 739</label></div>
+        <div class="radio-opt"><input type="radio" name="credit" id="cr-740" value="740+"><label for="cr-740">740 and above</label></div>
+      </div>
+      <div class="error" id="err-1">Please select an option.</div>
+      <div class="btn-row">
+        <button class="btn btn-primary" data-next="1">Next</button>
+      </div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section class="step" data-step="2" aria-labelledby="s2h">
+      <h2 id="s2h">Your Down Payment</h2>
+      <div class="why">Unlike buying a home to live in — where you might put down as little as 3% — investment properties typically require <strong>20% to 25% down</strong>. On a $225,000 property that means having $45,000 to $56,500 available. Knowing what you have ready helps us map your timeline.</div>
+      <div class="question">How much do you currently have available for a down payment?</div>
+      <div class="radio-row" role="radiogroup" aria-label="Down payment available" style="flex-direction:column">
+        <div class="radio-opt"><input type="radio" name="down" id="dn-saving" value="saving"><label for="dn-saving">I am still saving</label></div>
+        <div class="radio-opt"><input type="radio" name="down" id="dn-lt10k" value="lt10k"><label for="dn-lt10k">Less than $10,000</label></div>
+        <div class="radio-opt"><input type="radio" name="down" id="dn-10" value="10-19k"><label for="dn-10">$10,000 to $19,999</label></div>
+        <div class="radio-opt"><input type="radio" name="down" id="dn-20" value="20-39k"><label for="dn-20">$20,000 to $39,999</label></div>
+        <div class="radio-opt"><input type="radio" name="down" id="dn-30" value="40-59k"><label for="dn-30">$40,000 to $59,999</label></div>
+        <div class="radio-opt"><input type="radio" name="down" id="dn-50" value="60k+"><label for="dn-50">$60,000 or more</label></div>
+      </div>
+      <div class="error" id="err-2">Please select an option.</div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" data-back>Back</button>
+        <button class="btn btn-primary" data-next="2">Next</button>
+      </div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section class="step" data-step="3" aria-labelledby="s3h">
+      <h2 id="s3h">Your Target Property</h2>
+      <div class="why">Do you have a specific property in mind or are you still exploring? <strong>Either answer is completely fine</strong> — this just helps us calculate your numbers more accurately.</div>
+      <div class="question">Do you have a property in mind?</div>
+      <div class="radio-row" role="radiogroup" aria-label="Property in mind">
+        <div class="radio-opt">
+          <input type="radio" name="hasProp" id="hp-yes" value="yes">
+          <label for="hp-yes">Yes</label>
+        </div>
+        <div class="radio-opt">
+          <input type="radio" name="hasProp" id="hp-no" value="no">
+          <label for="hp-no">Not yet</label>
+        </div>
+      </div>
+
+      <div id="propYes" style="display:none;margin-top:1.25rem">
+        <div class="field">
+          <label class="field-label" for="price">Estimated purchase price $</label>
+          <input id="price" type="number" min="0" inputmode="numeric" placeholder="225000" />
+        </div>
+        <div class="field">
+          <label class="field-label" for="rent">What do you think this property could rent for per month $</label>
+          <input id="rent" type="number" min="0" inputmode="numeric" placeholder="1400" />
+        </div>
+      </div>
+
+      <div id="propNo" style="display:none;margin-top:1.25rem">
+        <div class="why" style="background:#eafdfe;border-left-color:var(--primary-dark);color:var(--ink)">
+          No problem. We'll use a typical example property ($225,000 purchase, $1,400/mo rent) to show you how the numbers work so you can apply this when you find your deal.
+        </div>
+      </div>
+
+      <div class="error" id="err-3">Please choose an option and fill in the property details.</div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" data-back>Back</button>
+        <button class="btn btn-primary" data-next="3">Next</button>
+      </div>
+    </section>
+
+    <!-- STEP 4 -->
+    <section class="step" data-step="4" aria-labelledby="s4h">
+      <h2 id="s4h">Your DSCR — Does This Property Pay For Itself?</h2>
+      <div class="why">
+        Here's something most banks never tell you. There's a type of loan called a <strong>DSCR loan</strong> — Debt Service Coverage Ratio. Unlike a conventional loan it doesn't qualify you based on your personal income or tax returns. It qualifies you based on whether the property earns enough in rent to cover its own costs.<br><br>
+        To calculate this we need to estimate your <strong>PITIA</strong> — Principal, Interest, Taxes, Insurance, and Associations. Lenders want to see that the rent covers this — ideally at a ratio of <strong>1.0 or higher</strong>.
+      </div>
+      <div class="breakdown" id="breakdown"></div>
+      <div class="dscr-display">
+        <div class="lbl">Your DSCR Ratio</div>
+        <div class="ratio" id="dscrRatio">0.00</div>
+      </div>
+      <div class="dscr-interp" id="dscrInterp"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" data-back>Back</button>
+        <button class="btn btn-primary" data-next="4">Next</button>
+      </div>
+    </section>
+
+    <!-- STEP 5 -->
+    <section class="step" data-step="5" aria-labelledby="s5h">
+      <h2 id="s5h">Your Income Situation</h2>
+      <div class="why">One of the biggest advantages of a DSCR loan is that it <strong>does not require you to show personal income</strong>. That means it works well for people who are self-employed, contractors, or whose tax returns don't show strong income. Knowing your situation helps us give you the most accurate picture.</div>
+      <div class="question">Which best describes your current income situation?</div>
+      <div class="radio-row" role="radiogroup" aria-label="Income type" style="flex-direction:column">
+        <div class="radio-opt"><input type="radio" name="income" id="in-w2" value="w2"><label for="in-w2">W2 Employee — I receive a regular paycheck</label></div>
+        <div class="radio-opt"><input type="radio" name="income" id="in-self" value="self"><label for="in-self">Self-Employed — I own a business or freelance</label></div>
+        <div class="radio-opt"><input type="radio" name="income" id="in-1099" value="1099"><label for="in-1099">1099 Contractor — I receive contractor payments</label></div>
+        <div class="radio-opt"><input type="radio" name="income" id="in-retired" value="retired"><label for="in-retired">Retired or Fixed Income</label></div>
+        <div class="radio-opt"><input type="radio" name="income" id="in-between" value="between"><label for="in-between">Currently between jobs or building income</label></div>
+        <div class="radio-opt"><input type="radio" name="income" id="in-prefer" value="prefer"><label for="in-prefer">Prefer not to say</label></div>
+      </div>
+      <div class="error" id="err-5">Please select an option.</div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" data-back>Back</button>
+        <button class="btn btn-primary" data-next="5">Next</button>
+      </div>
+    </section>
+
+    <!-- STEP 6 -->
+    <section class="step" data-step="6" aria-labelledby="s6h">
+      <h2 id="s6h">Your Timeline</h2>
+      <div class="why">Knowing when you want to move helps us point you toward the right next step. <strong>There's no wrong answer here</strong> — whether you want to move fast or are still learning, we can map a path that fits where you are.</div>
+      <div class="question">When are you hoping to purchase your first investment property?</div>
+      <div class="radio-row" role="radiogroup" aria-label="Target timeline" style="flex-direction:column">
+        <div class="radio-opt"><input type="radio" name="timeline" id="tl-asap" value="asap"><label for="tl-asap">As soon as possible — I am ready to move</label></div>
+        <div class="radio-opt"><input type="radio" name="timeline" id="tl-3m" value="3m"><label for="tl-3m">Within the next 3 months</label></div>
+        <div class="radio-opt"><input type="radio" name="timeline" id="tl-6m" value="6m"><label for="tl-6m">Within the next 6 months</label></div>
+        <div class="radio-opt"><input type="radio" name="timeline" id="tl-12m" value="12m"><label for="tl-12m">Within the next 12 months</label></div>
+        <div class="radio-opt"><input type="radio" name="timeline" id="tl-learning" value="learning"><label for="tl-learning">I am still learning and exploring</label></div>
+        <div class="radio-opt"><input type="radio" name="timeline" id="tl-unsure" value="unsure"><label for="tl-unsure">I am not sure yet</label></div>
+      </div>
+      <div class="error" id="err-6">Please select an option.</div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" data-back>Back</button>
+        <button class="btn btn-primary" data-next="6">Next</button>
+      </div>
+    </section>
+
+    <!-- STEP 7 -->
+    <section class="step" data-step="7" aria-labelledby="s7h">
+      <h2 id="s7h">Let's get started</h2>
+      <div class="why">We'll use this to send you a summary of your results. <strong>No spam</strong> — just your score and next steps.</div>
+      <div class="field">
+        <label class="field-label" for="firstName">First Name</label>
+        <input id="firstName" type="text" autocomplete="given-name" aria-required="true" />
+      </div>
+      <div class="field">
+        <label class="field-label" for="email">Email Address</label>
+        <input id="email" type="email" autocomplete="email" aria-required="true" />
+      </div>
+      <div class="error" id="err-7">Please fill in your name and a valid email.</div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" data-back>Back</button>
+        <button class="btn btn-primary" data-next="7">See My Score</button>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="step" data-step="8" id="results" aria-labelledby="resultsH"></section>
+  </div>
+</main>
+
+<script>
+(function(){
+  const state = {
+    step: 1,
+    totalSteps: 7,
+    firstName: '', email: '',
+    credit: '', down: '', hasProp: '', price: null, rent: null,
+    income: '', timeline: '',
+    dscr: 0, pitia: 0, loan:0, pi:0, tax:0, ins:0, priceUsed:0, rentUsed:0,
+    downPct: 25, rate: 7.5, dscrSeededFor: ''
+  };
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
+  const money = n => '$' + Math.round(n).toLocaleString('en-US');
+
+  function showStep(n){
+    state.step = n;
+    $$('.step').forEach(el => el.classList.toggle('active', +el.dataset.step === n));
+    const isResults = n === 8;
+    $('#progressWrap').style.display = isResults ? 'none' : 'block';
+    if(!isResults){
+      const pct = Math.round((n/state.totalSteps)*100);
+      $('#progressFill').style.width = pct + '%';
+      $('#stepLabel').textContent = `Step ${n} of ${state.totalSteps}`;
+      $('#pctLabel').textContent = pct + '%';
+    }
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function showErr(step, msg){
+    const e = document.getElementById('err-'+step);
+    if(!e) return;
+    if(msg) e.textContent = msg;
+    e.classList.add('show');
+  }
+  function clearErr(step){
+    const e = document.getElementById('err-'+step);
+    if(e) e.classList.remove('show');
+  }
+
+  // Step 4 radio toggle
+  document.querySelectorAll('input[name=hasProp]').forEach(r=>{
+    r.addEventListener('change',()=>{
+      state.hasProp = r.value;
+      $('#propYes').style.display = r.value==='yes'?'block':'none';
+      $('#propNo').style.display = r.value==='no'?'block':'none';
+    });
+  });
+
+  // Validation per step
+  function validate(step){
+    clearErr(step);
+    switch(step){
+      case 1: {
+        const v = (document.querySelector('input[name=credit]:checked')||{}).value||'';
+        if(!v){ showErr(1); return false; }
+        state.credit = v; return true;
+      }
+      case 2: {
+        const v = (document.querySelector('input[name=down]:checked')||{}).value||'';
+        if(!v){ showErr(2); return false; }
+        state.down = v; return true;
+      }
+      case 3: {
+        if(!state.hasProp){ showErr(3,'Please choose an option.'); return false; }
+        if(state.hasProp==='yes'){
+          const p = parseFloat($('#price').value);
+          const r = parseFloat($('#rent').value);
+          if(!p || p<=0 || !r || r<=0){ showErr(3,'Please enter a valid purchase price and monthly rent.'); return false; }
+          state.price = p; state.rent = r;
+        } else {
+          state.price = 225000; state.rent = 1400;
+        }
+        calcDSCR();
+        renderDSCR();
+        return true;
+      }
+      case 4: return true;
+      case 5: {
+        const v = (document.querySelector('input[name=income]:checked')||{}).value||'';
+        if(!v){ showErr(5); return false; }
+        state.income = v; return true;
+      }
+      case 6: {
+        const v = (document.querySelector('input[name=timeline]:checked')||{}).value||'';
+        if(!v){ showErr(6); return false; }
+        state.timeline = v; return true;
+      }
+      case 7: {
+        const fn = $('#firstName').value.trim();
+        const em = $('#email').value.trim();
+        const emOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em);
+        if(!fn || !emOk){ showErr(7); return false; }
+        state.firstName = fn; state.email = em; return true;
+      }
+    }
+    return true;
+  }
+
+  function calcDSCR(){
+    const price = state.price || 225000;
+    const rent = state.rent || 1400;
+    const seedKey = price + ':' + rent;
+    if(state.dscrSeededFor !== seedKey){
+      state.downPct = 25;
+      state.rate = 7.5;
+      state.dscrSeededFor = seedKey;
+    }
+    state.priceUsed = price;
+    state.rentUsed = rent;
+    state.tax = (price * 0.012)/12;
+    state.ins = (price * 0.008)/12;
+    recomputeDSCR();
+  }
+
+  function recomputeDSCR(){
+    const price = state.priceUsed || 225000;
+    const loan = price * (1 - state.downPct/100);
+    const r = (state.rate/100)/12;
+    const n = 360;
+    const pi = r > 0 ? loan * (r*Math.pow(1+r,n)) / (Math.pow(1+r,n)-1) : loan/n;
+    const pitia = pi + state.tax + state.ins;
+    const dscr = pitia > 0 ? Math.round((state.rentUsed/pitia)*100)/100 : 0;
+    Object.assign(state,{loan,pi,pitia,dscr});
+  }
+
+  function dscrInterp(d){
+    if(d>=1.25) return {txt:'Strong — this property more than pays for itself',cls:'ok'};
+    if(d>=1.0)  return {txt:'Qualifying — this property covers its own costs',cls:'ok'};
+    if(d>=0.85) return {txt:'Close — this property nearly covers its costs',cls:'warn'};
+    return {txt:'Gap — the rent does not yet cover the costs on this property',cls:'bad'};
+  }
+
+  function renderDSCR(){
+    const b = $('#breakdown');
+    b.innerHTML = `
+      <div class="slider-row">
+        <div class="head"><span class="label">Down payment</span><span class="val"><span id="sv-downPct">${state.downPct}%</span> <span style="color:var(--muted);font-weight:500">(<span id="sv-downAmt">${money(state.priceUsed*state.downPct/100)}</span>)</span></span></div>
+        <input type="range" id="sl-downPct" min="3" max="50" step="1" value="${state.downPct}">
+      </div>
+      <div class="slider-row">
+        <div class="head"><span class="label">Interest rate</span><span class="val"><span id="sv-rate">${state.rate.toFixed(3)}%</span></span></div>
+        <input type="range" id="sl-rate" min="5" max="12" step="0.125" value="${state.rate}">
+      </div>
+      <div class="row"><span class="label">Estimated loan amount</span><span class="val" id="sv-loan">${money(state.loan)}</span></div>
+      <div class="row"><span class="label">Monthly principal &amp; interest</span><span class="val" id="sv-pi">${money(state.pi)}</span></div>
+      <div class="row"><span class="label">Monthly taxes</span><span class="val">${money(state.tax)}</span></div>
+      <div class="row"><span class="label">Monthly insurance</span><span class="val">${money(state.ins)}</span></div>
+      <div class="row"><span class="label">HOA / Associations</span><span class="val">$0</span></div>
+      <div class="row"><span class="label"><strong>Total PITIA</strong></span><span class="val"><strong id="sv-pitia">${money(state.pitia)}</strong></span></div>
+      <div class="row"><span class="label">Monthly rent</span><span class="val">${money(state.rentUsed)}</span></div>
+    `;
+    $('#dscrRatio').textContent = state.dscr.toFixed(2);
+    $('#dscrInterp').textContent = dscrInterp(state.dscr).txt;
+
+    $('#sl-downPct').addEventListener('input', e => {
+      state.downPct = parseInt(e.target.value,10);
+      recomputeDSCR();
+      updateDSCRDisplay();
+    });
+    $('#sl-rate').addEventListener('input', e => {
+      state.rate = parseFloat(e.target.value);
+      recomputeDSCR();
+      updateDSCRDisplay();
+    });
+  }
+
+  function updateDSCRDisplay(){
+    $('#sv-downPct').textContent = state.downPct + '%';
+    $('#sv-downAmt').textContent = money(state.priceUsed * state.downPct/100);
+    $('#sv-rate').textContent = state.rate.toFixed(3) + '%';
+    $('#sv-loan').textContent = money(state.loan);
+    $('#sv-pi').textContent = money(state.pi);
+    $('#sv-pitia').textContent = money(state.pitia);
+    $('#dscrRatio').textContent = state.dscr.toFixed(2);
+    $('#dscrInterp').textContent = dscrInterp(state.dscr).txt;
+  }
+
+  // Scoring
+  const creditPts = {unknown:0,'below580':1,'580-619':2,'620-659':3,'660-699':4,'700-739':5,'740+':6};
+  const downPts = {saving:0,lt10k:1,'10-19k':2,'20-39k':3,'40-59k':4,'60k+':5};
+  const timelinePts = {unsure:0,learning:1,'12m':2,'6m':3,'3m':4,asap:5};
+  function dscrPts(d){ if(d>=1.25)return 4; if(d>=1.0)return 3; if(d>=0.85)return 2; return 0; }
+
+  function tier(s){
+    if(s>=16) return 'DEAL READY';
+    if(s>=11) return 'ALMOST THERE';
+    if(s>=6)  return 'BUILDING YOUR FOUNDATION';
+    return 'START HERE';
+  }
+
+  const tierMessage = {
+    'START HERE': "You're earlier in the journey than some — and that's actually a good thing. You found this before a lender told you no without explaining why. Your most important next steps are building your credit score and starting your down payment savings. A DSCR loan will be available to you — we just need to build the foundation first. Let's talk about a realistic timeline for you specifically.",
+    'BUILDING YOUR FOUNDATION': "You have real momentum. You understand the basics and you're making moves — but there are one or two gaps holding you back from being lender-ready today. The good news is these gaps are fixable and often faster to close than people expect. Let's map out exactly what needs to happen between now and your first deal.",
+    'ALMOST THERE': "You're close — and I mean genuinely close. Your numbers are in a range where a real conversation with a lender makes sense. There may be one factor we want to strengthen first depending on your full picture. Let's talk through it and get you moving toward an actual application.",
+    'DEAL READY': "Your numbers say you're ready. You have the credit, the capital, and a property concept that works on paper. The next step isn't more preparation — it's a real conversation about getting you into a deal. Let's book that call and make this happen."
+  };
+
+  const incomeNotes = {
+    w2: "Your W2 income is a straightforward picture for lenders. On a DSCR loan your personal income is not the qualifier — but it does support your overall financial profile.",
+    self: "Being self-employed often means your tax returns show less income than you actually earn. DSCR loans were practically built for situations like yours — the property qualifies, not your 1040.",
+    '1099': "1099 income can make conventional loans complicated. DSCR loans sidestep that entirely by focusing on what the property earns — not what your tax returns show.",
+    retired: "Fixed income can actually be very clean from a lender perspective. And since DSCR loans qualify on property income — your retirement income is supportive context, not the deciding factor.",
+    between: "This is where DSCR loans shine most. Because the property qualifies itself based on rental income — your current employment gap matters far less than it would on a conventional loan.",
+    prefer: "No problem. The good news about DSCR loans is that personal income is not the primary qualifier — the property does the talking."
+  };
+
+  const creditLabels = {unknown:'Unknown',below580:'Below 580','580-619':'580–619','620-659':'620–659','660-699':'660–699','700-739':'700–739','740+':'740+'};
+  const downLabels = {saving:'Still saving',lt10k:'Less than $10,000','10-19k':'$10,000–$19,999','20-39k':'$20,000–$39,999','40-59k':'$40,000-$59,999','60k+':'$60,000+'};
+  const timeLabels = {asap:'As soon as possible','3m':'Within 3 months','6m':'Within 6 months','12m':'Within 12 months',learning:'Still learning',unsure:'Not sure yet'};
+
+  function creditStatus(c){
+    if(['660-699','700-739','740+'].includes(c)) return {i:'✅',t:'Solid — you meet most DSCR lender thresholds.'};
+    if(c==='620-659') return {i:'⚠️',t:'You\'re at the edge — some lenders will work with you, some won\'t.'};
+    return {i:'❌',t:'A bit of credit work first will open many more doors.'};
+  }
+  function downStatus(d){
+    if(['40-59k','60k+'].includes(d)) return {i:'✅',t:'You have enough for a 25% down payment on a starter investment property.'};
+    if(d==='20-39k') return {i:'⚠️',t:'You\'re close — a smaller property or a bit more savings gets you there.'};
+    return {i:'❌',t:'Building your down payment is the biggest lever you can pull right now.'};
+  }
+  function dscrStatus(v){
+    if(v>=1.0) return {i:'✅',t:'The property pays for itself — exactly what DSCR lenders want to see.'};
+    if(v>=0.85) return {i:'⚠️',t:'Nearly there — a stronger rent or different property gets this over the line.'};
+    return {i:'❌',t:'These numbers don\'t support themselves yet — let\'s look at different properties.'};
+  }
+  function timeStatus(t){
+    if(['asap','3m','6m'].includes(t)) return {i:'✅',t:'Your timeline is actionable — let\'s use it.'};
+    if(t==='12m') return {i:'⚠️',t:'A 12-month runway gives us time to strengthen weak spots.'};
+    return {i:'❌',t:'No rush — start with education and let your plan take shape.'};
+  }
+
+  function renderResults(){
+    const score = (creditPts[state.credit]||0) + (downPts[state.down]||0) + dscrPts(state.dscr) + (timelinePts[state.timeline]||0);
+    const t = tier(score);
+    const cs = creditStatus(state.credit);
+    const ds = downStatus(state.down);
+    const xs = dscrStatus(state.dscr);
+    const ts = timeStatus(state.timeline);
+    const pct = (score/20)*100;
+
+    $('#results').innerHTML = `
+      <h2 id="resultsH" class="tier">${t}</h2>
+      <div class="score-line">${state.firstName ? state.firstName + ', your' : 'Your'} Investor Readiness Score: <strong>${score} out of 20</strong></div>
+      <div class="score-bar"><div class="score-bar-fill" style="width:${pct}%"></div></div>
+
+      <div class="section-title">Your factor breakdown</div>
+      <div class="grid">
+        <div class="factor">
+          <div class="top"><span class="lbl">Credit Score</span><span class="icon">${cs.i}</span></div>
+          <div class="answer">${creditLabels[state.credit]}</div>
+          <div class="interp">${cs.t}</div>
+        </div>
+        <div class="factor">
+          <div class="top"><span class="lbl">Down Payment</span><span class="icon">${ds.i}</span></div>
+          <div class="answer">${downLabels[state.down]}</div>
+          <div class="interp">${ds.t}</div>
+        </div>
+        <div class="factor">
+          <div class="top"><span class="lbl">Property Cash Flow</span><span class="icon">${xs.i}</span></div>
+          <div class="answer">DSCR ${state.dscr.toFixed(2)}</div>
+          <div class="interp">${xs.t}</div>
+        </div>
+        <div class="factor">
+          <div class="top"><span class="lbl">Timeline</span><span class="icon">${ts.i}</span></div>
+          <div class="answer">${timeLabels[state.timeline]}</div>
+          <div class="interp">${ts.t}</div>
+        </div>
+      </div>
+
+      <div class="section-title">Your personalized next step</div>
+      <div class="next-step">${tierMessage[t]}</div>
+
+      <div class="section-title">A note on your income type</div>
+      <div class="income-note">${incomeNotes[state.income]||''}</div>
+
+      <div class="cta">
+        <h3>Want to walk through this together?</h3>
+        <p>I built this tool because I got denied for a loan once and nobody explained why. I don't want that to happen to you. Book a free 20 minute call and I'll personally walk through your numbers and tell you exactly what your most realistic path forward looks like — no pitch, no pressure, just a straight conversation.</p>
+        <p class="signed">— Darnell</p>
+        <a class="cta-btn" href="https://calendar.app.google/BKX2vBByVAJViNB8A" target="_blank" rel="noopener noreferrer">Book Your Free Strategy Call</a>
+        <div class="cta-fine">Free. No obligation. No sales pitch. Just your numbers and a straight conversation.</div>
+      </div>
+
+      <div class="footer-actions">
+        <a id="printBtn" tabindex="0">Save my results</a>
+        <a id="retakeBtn" tabindex="0">Retake the Assessment</a>
+      </div>
+    `;
+    $('#printBtn').addEventListener('click',()=>window.print());
+    $('#retakeBtn').addEventListener('click',reset);
+  }
+
+  function reset(){
+    Object.assign(state,{step:1,firstName:'',email:'',credit:'',down:'',hasProp:'',price:null,rent:null,income:'',timeline:'',dscr:0,downPct:25,rate:7.5,dscrSeededFor:''});
+    $('#firstName').value=''; $('#email').value='';
+    document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
+    $('#price').value=''; $('#rent').value='';
+    document.querySelectorAll('input[name=hasProp]').forEach(r=>r.checked=false);
+    $('#propYes').style.display='none'; $('#propNo').style.display='none';
+    $$('.error').forEach(e=>e.classList.remove('show'));
+    showStep(1);
+  }
+
+  // Navigation
+  document.querySelectorAll('[data-next]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const s = +btn.dataset.next;
+      if(!validate(s)) return;
+      if(s===7){
+        renderResults();
+        showStep(8);
+      } else {
+        showStep(s+1);
+      }
+    });
+  });
+  document.querySelectorAll('[data-back]').forEach(btn=>{
+    btn.addEventListener('click',()=>showStep(state.step-1));
+  });
+
+  showStep(1);
+})();
+</script>
+</body>
+</html>
