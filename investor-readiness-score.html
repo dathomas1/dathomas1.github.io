@@ -390,7 +390,8 @@
     firstName: '', email: '',
     credit: '', down: '', hasProp: '', price: null, rent: null,
     income: '', timeline: '',
-    dscr: 0, pitia: 0, loan:0, pi:0, tax:0, ins:0, hoa:0, priceUsed:0, rentUsed:0, dscrSeededFor:''
+    dscr: 0, pitia: 0, loan:0, pi:0, tax:0, ins:0, hoa:0, priceUsed:0, rentUsed:0, 
+    downPct: 25, rate: 7.5, dscrSeededFor:''
   };
 
   const $ = s => document.querySelector(s);
@@ -493,21 +494,28 @@
     const seedKey = price+'|'+rent;
     // Only reseed defaults when price/rent changed (preserves user slider tweaks)
     if(state.dscrSeededFor !== seedKey){
-      state.loan = Math.round(price * 0.75);
+      state.downPct = 25;
+      state.rate = 7.5;
       state.tax  = Math.round((price * 0.012)/12);
       state.ins  = Math.round((price * 0.008)/12);
       state.hoa  = 0;
-      state.rentUsed = Math.round(rent);
-      state.priceUsed = price;
+      
       state.dscrSeededFor = seedKey;
     }
+    state.rentUsed = Math.round(rent);
+    state.priceUsed = price;
     recomputeDSCR();
   }
 
   function recomputeDSCR(){
-    state.pi = piFromLoan(state.loan);
-    state.pitia = state.pi + state.tax + state.ins + state.hoa;
-    state.dscr = state.pitia>0 ? Math.round((state.rentUsed/state.pitia)*100)/100 : 0;
+    const price = state.priceUsed || 225000;
+    const loan = price * (1 - state.downPct/100);
+    const r = (state.rate/100)/12;
+    const n = 360;
+    const pi = r > 0 ? loan * (r*Math.pow(1+r,n)) / (Math.pow(1+r,n)-1) : loan/n;
+    const pitia = pi + state.tax + state.ins;
+    const dscr = pitia > 0 ? Math.round((state.rentUsed/pitia)*100)/100 : 0;
+    Object.assign(state,{loan,pi,pitia,dscr});
   }
 
   function dscrInterp(d){
@@ -526,6 +534,9 @@
   }
 
   function updateDSCRDisplay(){
+    $('#sv-downPct').textContent = state.downPct + '%';
+    $('#sv-downAmt').textContent = money(state.priceUsed * state.downPct/100);
+    $('#sv-rate').textContent = state.rate.toFixed(3) + '%';
     $('#sv-pi').textContent = money(state.pi);
     $('#sv-pitia').textContent = money(state.pitia);
     $('#dscrRatio').textContent = state.dscr.toFixed(2);
@@ -537,7 +548,14 @@
     const loanMax = Math.max(500000, Math.round(price * 1.25));
     const b = $('#breakdown');
     b.innerHTML = `
-      ${sliderRow('loan','Estimated loan amount',25000,loanMax,1000,state.loan)}
+      <div class="slider-row">
+        <div class="head"><span class="label">Down payment</span><span class="val"><span id="sv-downPct">${state.downPct}%</span> <span style="color:var(--muted);font-weight:500">(<span id="sv-downAmt">${money(state.priceUsed*state.downPct/100)}</span>)</span></span></div>
+        <input type="range" id="sl-downPct" min="3" max="50" step="1" value="${state.downPct}">
+      </div>
+      <div class="slider-row">
+        <div class="head"><span class="label">Interest rate</span><span class="val"><span id="sv-rate">${state.rate.toFixed(3)}%</span></span></div>
+        <input type="range" id="sl-rate" min="1" max="15" step="0.125" value="${state.rate}">
+      </div>
       <div class="row"><span class="label">Monthly principal &amp; interest</span><span class="val" id="sv-pi">${money(state.pi)}</span></div>
       ${sliderRow('tax','Monthly taxes',0,1500,10,state.tax)}
       ${sliderRow('ins','Monthly insurance',0,800,5,state.ins)}
@@ -547,6 +565,17 @@
     `;
     $('#dscrRatio').textContent = state.dscr.toFixed(2);
     $('#dscrInterp').textContent = dscrInterp(state.dscr).txt;
+    
+    $('#sl-downPct').addEventListener('input', e => {
+      state.downPct = parseInt(e.target.value,10);
+      recomputeDSCR();
+      updateDSCRDisplay();
+    });
+    $('#sl-rate').addEventListener('input', e => {
+      state.rate = parseFloat(e.target.value);
+      recomputeDSCR();
+      updateDSCRDisplay();
+    });
 
     const bind = (key, stateKey) => {
       const el = document.getElementById('sl-'+key);
@@ -559,7 +588,7 @@
         updateDSCRDisplay();
       });
     };
-    bind('loan','loan');
+
     bind('tax','tax');
     bind('ins','ins');
     bind('hoa','hoa');
@@ -697,7 +726,7 @@
   }
 
   function reset(){
-    Object.assign(state,{step:1,firstName:'',email:'',credit:'',down:'',hasProp:'',price:null,rent:null,income:'',timeline:'',dscr:0,dscrSeededFor:''});
+    Object.assign(state,{step:1,firstName:'',email:'',credit:'',down:'',hasProp:'',price:null,rent:null,income:'',timeline:'',dscr:0,downPct:25,rate:7.5,dscrSeededFor:''});
     $('#firstName').value=''; $('#email').value='';
     document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
     $('#price').value=''; $('#rent').value='';
