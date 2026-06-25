@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ADAVIC ODIM Clinical Guide & Builder</title>
+    <style>
+        :root {
+            --bg-deep: #0f172a;
+            --bg-surface: #1e293b;
+            --accent: #38bdf8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: #334155;
+            --input-bg: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        header {
+            padding: 1.25rem 1rem;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+
+        h1 { font-size: 1.25rem; color: var(--accent); letter-spacing: 0.05rem; }
+        .subtitle { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem; }
+
+        #dashboard {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: #1e293b;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .dash-item { text-align: center; flex: 1; }
+        .dash-label { font-size: 0.6rem; text-transform: uppercase; color: var(--text-dim); display: block; }
+        .dash-value { font-weight: bold; font-size: 0.9rem; color: var(--accent); }
+
+        .quit-btn {
+            background: transparent;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 0.4rem 0.6rem;
+            font-size: 0.65rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .card {
+            background: var(--bg-surface);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid var(--border);
+        }
+
+        /* Launcher Styles */
+        .launcher-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .launcher-btn {
+            flex: 1;
+            padding: 1rem;
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .edit-icon-btn {
+            background: #2d3748;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 0 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .launcher-btn:active { background: var(--accent); color: var(--bg-deep); }
+        
+        .util-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1.5rem; }
+        .util-btn {
+            padding: 0.6rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: #2d3748;
+            color: var(--text-dim);
+            text-align: center;
+        }
+
+        /* Form Styles */
+        label { display: block; font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim); margin: 0.75rem 0 0.25rem 0; font-weight: bold; }
+        input, textarea, select {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        .step-builder-card { border-left: 4px solid var(--accent); padding-left: 1rem; margin: 1.5rem 0; background: rgba(56, 189, 248, 0.05); padding-bottom: 1rem; }
+
+        /* Gameplay Views */
+        .vignette { font-style: italic; font-size: 0.95rem; border-left: 3px solid var(--accent); padding-left: 0.75rem; margin-bottom: 1rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+        .data-point { background: var(--bg-deep); padding: 0.5rem; border-radius: 6px; text-align: center; border: 1px solid var(--border); }
+        .data-label { font-size: 0.55rem; color: var(--text-dim); display: block; text-transform: uppercase; }
+        .data-val { font-size: 0.8rem; font-weight: bold; }
+
+        /* Matrix Styles */
+        .matrix-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.4rem; margin-bottom: 1.5rem; }
+        .matrix-box { background: var(--bg-deep); border: 1px solid var(--border); padding: 0.4rem; border-radius: 4px; text-align: center; min-height: 50px; display: flex; flex-direction: column; justify-content: center; }
+        .matrix-letter { font-weight: bold; font-size: 0.7rem; color: var(--text-dim); }
+        .matrix-content { font-size: 0.55rem; color: var(--success); line-height: 1.1; margin-top: 2px; }
+        .matrix-box.active { border-color: var(--accent); box-shadow: 0 0 5px var(--accent); }
+        .matrix-box.filled { border-color: var(--success); }
+
+        .btn-group { display: flex; flex-direction: column; gap: 0.75rem; }
+        .choice-btn { background: #2d3748; border: 1px solid var(--border); color: var(--text-main); padding: 1rem; border-radius: 8px; text-align: left; font-size: 0.9rem; cursor: pointer; }
+        .choice-btn.correct { background: var(--success); border-color: var(--success); }
+        .choice-btn.incorrect { background: var(--danger); border-color: var(--danger); }
+
+        #feedback-box { margin-top: 1rem; padding: 1rem; border-radius: 8px; display: none; font-size: 0.85rem; }
+        .feedback-correct { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); color: #d1fae5; }
+        .feedback-incorrect { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: #fee2e2; }
+
+        .advance-btn { width: 100%; padding: 1rem; background: var(--accent); color: var(--bg-deep); border: none; border-radius: 8px; font-weight: bold; margin-top: 1rem; display: none; }
+        .results-score { font-size: 4rem; font-weight: 800; color: var(--accent); text-align: center; margin: 1rem 0; }
+        .results-msg { text-align: center; color: var(--text-main); margin-bottom: 2rem; font-size: 1rem; line-height: 1.4; }
+
+        .hidden { display: none !important; }
+        .section-label { font-size: 0.65rem; text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem; display: block; font-weight: 800; letter-spacing: 0.05rem; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>ADAVIC ODIM SIMULATOR</h1>
+    <p class="subtitle">Clinical Transition Authoring Suite</p>
+</header>
+
+<div id="dashboard" class="hidden">
+    <div class="dash-item" style="flex: 0 0 60px;">
+        <button class="quit-btn" onclick="returnToLauncher()">Exit</button>
+    </div>
+    <div class="dash-item">
+        <span class="dash-label">Module</span>
+        <span id="module-name" class="dash-value">---</span>
+    </div>
+    <div class="dash-item" style="flex: 0 0 60px;">
+        <span class="dash-label">Score</span>
+        <span id="score-val" class="dash-value">100</span>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Launcher -->
+    <div id="launcher">
+        <div class="card">
+            <span class="section-label">Select Simulation Case</span>
+            <div id="scenario-list"></div>
+            
+            <div class="util-row">
+                <button class="util-btn" onclick="showBuilder()">+ Create New</button>
+                <button class="util-btn" onclick="triggerImport()">Import JSON</button>
+            </div>
+            <input type="file" id="import-file" class="hidden" accept=".json" onchange="handleImport(event)">
+        </div>
+    </div>
+
+    <!-- Case Builder Form -->
+    <div id="builder-view" class="hidden">
+        <div class="card">
+            <span class="section-label">Case Authoring Form</span>
+            <input type="hidden" id="b-edit-id">
+            
+            <label>Case Title</label>
+            <input type="text" id="b-title" placeholder="e.g., Acute Pancreatitis">
+            
+            <label>Patient Vignette</label>
+            <textarea id="b-vignette" rows="3" placeholder="Clinical presentation details..."></textarea>
+            
+            <div class="form-grid-2">
+                <div>
+                    <label>Initial Vitals (JSON)</label>
+                    <textarea id="b-vitals-raw" rows="4" placeholder='{"HR":"110", "BP":"90/60"}'></textarea>
+                </div>
+                <div>
+                    <label>Initial Labs (JSON)</label>
+                    <textarea id="b-labs-raw" rows="4" placeholder='{"WBC":"15", "Lipase":"1200"}'></textarea>
+                </div>
+            </div>
+
+            <div id="steps-container"></div>
+            
+            <button class="util-btn" style="width:100%; margin-top: 1rem;" onclick="addStepForm()">+ Add Progression Step</button>
+            
+            <div class="util-row">
+                <button class="launcher-btn" style="border-color: var(--success); color: var(--success);" onclick="saveCustomCase()">Save & Launch</button>
+                <button class="launcher-btn" style="border-color: var(--danger); color: var(--danger);" onclick="cancelBuilder()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gameplay View -->
+    <div id="gameplay" class="hidden">
+        <span class="section-label">Admission Matrix (A-D-A-V-I-C O-D-I-M)</span>
+        <div class="matrix-container" id="matrix-ui"></div>
+
+        <div class="card">
+            <span class="section-label">Dynamic Clinical Status</span>
+            <p id="vignette" class="vignette"></p>
+            <div class="grid-3" id="vitals-ui"></div>
+            <div class="grid-3" id="labs-ui"></div>
+        </div>
+
+        <div class="card">
+            <span class="section-label" id="step-header">Current Phase</span>
+            <div class="btn-group" id="choices-ui"></div>
+            <div id="feedback-box"></div>
+            <button id="advance-btn" class="advance-btn" onclick="advanceStep()">Next Step &rarr;</button>
+        </div>
+        
+        <button class="util-btn" style="width:100%; margin-bottom: 1rem;" onclick="exportCurrentCase()">Download This Case (JSON)</button>
+    </div>
+
+    <!-- Completion Screen -->
+    <div id="results-screen" class="hidden">
+        <div class="card" style="text-align: center;">
+            <div class="results-score" id="final-score-display">100</div>
+            <p class="results-msg" id="results-commentary"></p>
+            <button class="launcher-btn" onclick="returnToLauncher()">End Session</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ADAVIC_MAP = { 'A':0, 'D':1, 'A2':2, 'V':3, 'I':4, 'C':5, 'O':6, 'D2':7, 'I2':8, 'M':9 };
+    const MATRIX_LETTERS = ['A', 'D', 'A', 'V', 'I', 'C', 'O', 'D', 'I', 'M'];
+
+    let scenarios = {
+        'DKA': {
+            name: 'Diabetic Ketoacidosis (DKA)',
+            vignette: '24yo M with Type 1 DM presents with 2 days of polyuria, polydipsia, nausea, and vomiting. He appears fatigued with fruity-smelling breath.',
+            vitals: { 'Temp': '99.1', 'HR': '118', 'BP': '102/60', 'RR': '26', 'SpO2': '98%' },
+            labs: { 'Gluc': '450', 'HCO3': '10', 'pH': '7.18', 'K': '4.1', 'Gap': '24' },
+            steps: [
+                {
+                    phase: 'Triage', matrixKey: 'A', matrixLabel: 'Step-down/ICU',
+                    options: [
+                        { text: 'General floor admission', penalty: 20, correct: false, reason: 'High risk; insulin drips require close monitoring and frequent lab draws.' },
+                        { text: 'Step-down/ICU drip protocol', penalty: 0, correct: true, reason: 'Standard of care for continuous insulin infusion and hourly monitoring.' }
+                    ]
+                },
+                {
+                    phase: 'Order Diagnostics', matrixKey: 'O', matrixLabel: 'Hourly FS / Q4h BMP',
+                    options: [
+                        { text: 'Order basic morning BMP only', penalty: 20, correct: false, reason: 'Daily labs will miss the rapid electrolyte shifts and gap closure progress.' },
+                        { text: 'Order continuous hourly fingersticks and BMP every 2-4 hours', penalty: 0, correct: true, reason: 'Necessary to calculate anion gap closure and monitor for hypokalemia.' }
+                    ]
+                },
+                {
+                    phase: 'Electrolytes', matrixKey: 'I', matrixLabel: 'KCl Maintenance',
+                    options: [
+                        { text: 'Hold potassium replacement', penalty: 20, correct: false, reason: 'Insulin will drive K+ into cells, leading to severe hypokalemia if not replaced.' },
+                        { text: 'Add 20-30 mEq KCl to maintenance fluids', penalty: 0, correct: true, reason: 'Replacing potassium concurrently prevents life-threatening arrhythmias during treatment.' }
+                    ]
+                },
+                {
+                    phase: 'Two-Bag System', matrixKey: 'I2', matrixLabel: 'D5 / Insulin Titr.',
+                    options: [
+                        { text: 'Stop insulin drip at glucose 240', penalty: 20, correct: false, reason: 'Stopping insulin before the gap closes leads to rebound ketosis.' },
+                        { text: 'Switch fluids to D5 0.45% NS while continuing titrated insulin', penalty: 0, correct: true, reason: 'Allows insulin infusion to continue until the acidosis resolves.' }
+                    ]
+                }
+            ]
+        },
+        'ADHF': {
+            name: 'Acute Heart Failure (ADHF)',
+            vignette: '68yo F with history of HFrEF presents with worsening dyspnea on exertion and 15lb weight gain. She is using 3 pillows to sleep.',
+            vitals: { 'Temp': '98.6', 'HR': '102', 'BP': '158/94', 'RR': '28', 'SpO2': '87%' },
+            labs: { 'BNP': '2400', 'Cr': '1.3', 'Na': '136', 'K': '3.9' },
+            steps: [
+                {
+                    phase: 'Oxygenation', matrixKey: 'I2', matrixLabel: 'BiPAP Support',
+                    options: [
+                        { text: 'Low flow nasal cannula', penalty: 15, correct: false, reason: 'Patient is significantly hypoxic and tachypneic; needs recruitment.' },
+                        { text: 'Non-Invasive Positive Pressure Ventilation (BiPAP)', penalty: 0, correct: true, reason: 'Reduces work of breathing and improves pulmonary edema.' }
+                    ]
+                },
+                {
+                    phase: 'Diuresis', matrixKey: 'M', matrixLabel: '80mg IV Furosemide',
+                    options: [
+                        { text: 'Home oral Furosemide 40mg', penalty: 20, correct: false, reason: 'Oral bioavailability is poor in acute gut edema.' },
+                        { text: '1x-2x home dose via IV route (80mg IV)', penalty: 0, correct: true, reason: 'Direct IV route ensures rapid and predictable diuresis.' }
+                    ]
+                },
+                {
+                    phase: 'Order Diagnostics', matrixKey: 'O', matrixLabel: 'Serial Trop/BMP',
+                    options: [
+                        { text: 'Order basic morning BMP only', penalty: 15, correct: false, reason: 'Fails to rule out acute coronary triggers for decompensation.' },
+                        { text: 'Order serial Troponins and daily BMP/CMP', penalty: 0, correct: true, reason: 'Troponins rule out ischemia; CMP monitors renal perfusion during diuresis.' }
+                    ]
+                },
+                {
+                    phase: 'Restrictions', matrixKey: 'D', matrixLabel: '2g Na / 2L Fluid',
+                    options: [
+                        { text: 'Regular diet', penalty: 10, correct: false, reason: 'High sodium intake will counteract diuretic effects.' },
+                        { text: 'Strict 2g Sodium / 2L Fluid restriction', penalty: 0, correct: true, reason: 'Critical for volume management in heart failure.' }
+                    ]
+                }
+            ]
+        },
+        'CAP': {
+            name: 'Pneumonia (CAP)',
+            vignette: '74yo M presents with fever, productive cough, and R-sided pleuritic chest pain.',
+            vitals: { 'Temp': '102.1', 'HR': '112', 'BP': '108/62', 'RR': '24', 'SpO2': '90%' },
+            labs: { 'WBC': '16.2k', 'Cr': '0.8', 'Lactate': '1.1' },
+            steps: [
+                {
+                    phase: 'Triage', matrixKey: 'A', matrixLabel: 'General Floor',
+                    options: [
+                        { text: 'Discharge home', penalty: 20, correct: false, reason: 'Age and hypoxia (90% on RA) warrant inpatient stabilization.' },
+                        { text: 'Admit to General Medical Floor', penalty: 0, correct: true, reason: 'Patient requires IV antibiotics and supplemental oxygen.' }
+                    ]
+                },
+                {
+                    phase: 'Antibiotics', matrixKey: 'M', matrixLabel: 'Ceftriaxone/Azithro',
+                    options: [
+                        { text: 'Ciprofloxacin monotherapy', penalty: 15, correct: false, reason: 'Inadequate S. pneumoniae coverage for CAP.' },
+                        { text: 'Ceftriaxone 1-2g IV + Azithromycin 500mg PO/IV', penalty: 0, correct: true, reason: 'Standard dual therapy covering typical and atypical pathogens.' }
+                    ]
+                },
+                {
+                    phase: 'Order Diagnostics', matrixKey: 'O', matrixLabel: 'Pre-Abx Cultures',
+                    options: [
+                        { text: 'Advance to antibiotics and skip culture lines', penalty: 15, correct: false, reason: 'Missing cultures prevents de-escalation of therapy later.' },
+                        { text: 'Collect Blood Cultures x2, Sputum, and Urinary Antigens prior to infusion', penalty: 0, correct: true, reason: 'Obtaining cultures prior to antibiotics increases diagnostic yield.' }
+                    ]
+                }
+            ]
+        }
+    };
+
+    let state = { case: null, step: 0, score: 100 };
+
+    function initLauncher() {
+        const list = document.getElementById('scenario-list');
+        list.innerHTML = '';
+        Object.keys(scenarios).forEach(key => {
+            const row = document.createElement('div');
+            row.className = 'launcher-row';
+            
+            const btn = document.createElement('button');
+            btn.className = 'launcher-btn';
+            btn.innerText = scenarios[key].name;
+            btn.onclick = () => initGame(key);
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-icon-btn';
+            editBtn.innerText = 'Edit';
+            editBtn.onclick = (e) => { e.stopPropagation(); editCase(key); };
+
+            row.appendChild(btn);
+            row.appendChild(editBtn);
+            list.appendChild(row);
+        });
+    }
+
+    function editCase(id) {
+        const caseData = scenarios[id];
+        document.getElementById('launcher').classList.add('hidden');
+        document.getElementById('builder-view').classList.remove('hidden');
+        
+        document.getElementById('b-edit-id').value = id;
+        document.getElementById('b-title').value = caseData.name;
+        document.getElementById('b-vignette').value = caseData.vignette;
+        document.getElementById('b-vitals-raw').value = JSON.stringify(caseData.vitals, null, 2);
+        document.getElementById('b-labs-raw').value = JSON.stringify(caseData.labs, null, 2);
+        
+        document.getElementById('steps-container').innerHTML = '';
+        caseData.steps.forEach(step => addStepForm(step));
+    }
+
+    function initGame(id) {
+        state = { case: JSON.parse(JSON.stringify(scenarios[id])), step: 0, score: 100 };
+        document.getElementById('launcher').classList.add('hidden');
+        document.getElementById('builder-view').classList.add('hidden');
+        document.getElementById('results-screen').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        document.getElementById('gameplay').classList.remove('hidden');
+        document.getElementById('module-name').innerText = state.case.name;
+        document.getElementById('score-val').innerText = state.score;
+        initMatrixUI();
+        renderStep();
+    }
+
+    function initMatrixUI() {
+        const matrixDiv = document.getElementById('matrix-ui');
+        matrixDiv.innerHTML = '';
+        MATRIX_LETTERS.forEach((char, idx) => {
+            matrixDiv.innerHTML += `<div class="matrix-box" id="matrix-${idx}"><div class="matrix-letter">${char}</div><div class="matrix-content">---</div></div>`;
+        });
+    }
+
+    function renderStep() {
+        const step = state.case.steps[state.step];
+        if (step.vitalsUpdate) Object.assign(state.case.vitals, step.vitalsUpdate);
+        if (step.labsUpdate) Object.assign(state.case.labs, step.labsUpdate);
+
+        document.getElementById('vignette').innerText = state.case.vignette;
+        document.getElementById('step-header').innerText = `Phase: ${step.phase}`;
+        
+        const vitalsDiv = document.getElementById('vitals-ui');
+        vitalsDiv.innerHTML = '';
+        Object.entries(state.case.vitals).forEach(([k, v]) => {
+            vitalsDiv.innerHTML += `<div class="data-point"><span class="data-label">${k}</span><span class="data-val">${v}</span></div>`;
+        });
+
+        const labsDiv = document.getElementById('labs-ui');
+        labsDiv.innerHTML = '';
+        Object.entries(state.case.labs).forEach(([k, v]) => {
+            labsDiv.innerHTML += `<div class="data-point"><span class="data-label">${k}</span><span class="data-val">${v}</span></div>`;
+        });
+
+        const choicesDiv = document.getElementById('choices-ui');
+        choicesDiv.innerHTML = '';
+        const shuffled = [...step.options].sort(() => Math.random() - 0.5);
+        shuffled.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = opt.text;
+            btn.onclick = () => handleChoice(opt, btn);
+            choicesDiv.appendChild(btn);
+        });
+
+        document.getElementById('feedback-box').style.display = 'none';
+        document.getElementById('advance-btn').style.display = 'none';
+        
+        document.querySelectorAll('.matrix-box').forEach(el => el.classList.remove('active'));
+        const mIdx = ADAVIC_MAP[step.matrixKey] || 0;
+        document.getElementById(`matrix-${mIdx}`).classList.add('active');
+    }
+
+    function handleChoice(opt, btn) {
+        const fb = document.getElementById('feedback-box');
+        if (opt.correct) {
+            btn.classList.add('correct');
+            fb.innerHTML = `<strong>Protocol Correct:</strong> ${opt.reason}`;
+            fb.className = 'feedback-box feedback-correct';
+            fb.style.display = 'block';
+            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+            document.getElementById('advance-btn').style.display = 'block';
+            
+            const step = state.case.steps[state.step];
+            const mIdx = ADAVIC_MAP[step.matrixKey] || 0;
+            const box = document.getElementById(`matrix-${mIdx}`);
+            box.classList.add('filled');
+            box.querySelector('.matrix-content').innerText = step.matrixLabel;
+        } else {
+            btn.classList.add('incorrect');
+            state.score -= (opt.penalty || 15);
+            if (state.score < 0) state.score = 0;
+            document.getElementById('score-val').innerText = state.score;
+            fb.innerHTML = `<strong>Clinical Danger Risk:</strong> ${opt.reason}`;
+            fb.className = 'feedback-box feedback-incorrect';
+            fb.style.display = 'block';
+            btn.disabled = true;
+        }
+    }
+
+    function advanceStep() {
+        state.step++;
+        if (state.step < state.case.steps.length) renderStep();
+        else showCompletion();
+    }
+
+    function showCompletion() {
+        document.getElementById('gameplay').classList.add('hidden');
+        document.getElementById('results-screen').classList.remove('hidden');
+        document.getElementById('final-score-display').innerText = state.score;
+        document.getElementById('results-commentary').innerText = state.score > 80 ? "Superior clinical performance." : "Review LANGE pathophysiology chapters.";
+    }
+
+    function returnToLauncher() {
+        document.getElementById('gameplay').classList.add('hidden');
+        document.getElementById('results-screen').classList.add('hidden');
+        document.getElementById('builder-view').classList.add('hidden');
+        document.getElementById('dashboard').classList.add('hidden');
+        document.getElementById('launcher').classList.remove('hidden');
+        initLauncher();
+    }
+
+    function showBuilder() {
+        document.getElementById('launcher').classList.add('hidden');
+        document.getElementById('builder-view').classList.remove('hidden');
+        document.getElementById('b-edit-id').value = '';
+        document.getElementById('b-title').value = '';
+        document.getElementById('b-vignette').value = '';
+        document.getElementById('b-vitals-raw').value = '{}';
+        document.getElementById('b-labs-raw').value = '{}';
+        document.getElementById('steps-container').innerHTML = '';
+        addStepForm();
+    }
+
+    function addStepForm(data = null) {
+        const div = document.createElement('div');
+        div.className = 'step-builder-card';
+        const correctOpt = data ? data.options.find(o => o.correct) : {text: '', reason: ''};
+        const incorrectOpt = data ? data.options.find(o => !o.correct) : {text: '', reason: '', penalty: 15};
+        
+        div.innerHTML = `
+            <span class="section-label">Clinical Step</span>
+            <label>Phase Title</label>
+            <input type="text" class="s-phase" value="${data ? data.phase : ''}">
+            <label>Matrix Key</label>
+            <select class="s-mkey">
+                <option value="A" ${data && data.matrixKey == 'A' ? 'selected' : ''}>A (Admission)</option>
+                <option value="D" ${data && data.matrixKey == 'D' ? 'selected' : ''}>D (Diet)</option>
+                <option value="A2" ${data && data.matrixKey == 'A2' ? 'selected' : ''}>A2 (Activity)</option>
+                <option value="V" ${data && data.matrixKey == 'V' ? 'selected' : ''}>V (Vitals)</option>
+                <option value="I" ${data && data.matrixKey == 'I' ? 'selected' : ''}>I (IV Fluids)</option>
+                <option value="C" ${data && data.matrixKey == 'C' ? 'selected' : ''}>C (Consults)</option>
+                <option value="O" ${data && data.matrixKey == 'O' ? 'selected' : ''}>O (Orders/Labs)</option>
+                <option value="D2" ${data && data.matrixKey == 'D2' ? 'selected' : ''}>D2 (Diagnostics)</option>
+                <option value="I2" ${data && data.matrixKey == 'I2' ? 'selected' : ''}>I2 (Interventions)</option>
+                <option value="M" ${data && data.matrixKey == 'M' ? 'selected' : ''}>M (Medications)</option>
+            </select>
+            <label>Matrix Display Text</label>
+            <input type="text" class="s-mlabel" value="${data ? data.matrixLabel : ''}">
+            <label>Correct Choice & Rationale</label>
+            <input type="text" class="s-c-text" value="${correctOpt.text}">
+            <textarea class="s-c-reason">${correctOpt.reason}</textarea>
+            <label>Incorrect Choice & Danger Risk</label>
+            <input type="text" class="s-i-text" value="${incorrectOpt.text}">
+            <textarea class="s-i-reason">${incorrectOpt.reason}</textarea>
+            <label>Penalty Points</label>
+            <input type="number" class="s-penalty" value="${incorrectOpt.penalty || 15}">
+        `;
+        document.getElementById('steps-container').appendChild(div);
+    }
+
+    function saveCustomCase() {
+        try {
+            const newCase = {
+                name: document.getElementById('b-title').value || 'Unnamed Case',
+                vignette: document.getElementById('b-vignette').value,
+                vitals: JSON.parse(document.getElementById('b-vitals-raw').value || '{}'),
+                labs: JSON.parse(document.getElementById('b-labs-raw').value || '{}'),
+                steps: []
+            };
+
+            document.querySelectorAll('.step-builder-card').forEach(card => {
+                newCase.steps.push({
+                    phase: card.querySelector('.s-phase').value,
+                    matrixKey: card.querySelector('.s-mkey').value,
+                    matrixLabel: card.querySelector('.s-mlabel').value,
+                    options: [
+                        { text: card.querySelector('.s-c-text').value, penalty: 0, correct: true, reason: card.querySelector('.s-c-reason').value },
+                        { text: card.querySelector('.s-i-text').value, penalty: parseInt(card.querySelector('.s-penalty').value), correct: false, reason: card.querySelector('.s-i-reason').value }
+                    ]
+                });
+            });
+
+            const editId = document.getElementById('b-edit-id').value;
+            const id = editId || ('custom_' + Date.now());
+            scenarios[id] = newCase;
+            initLauncher();
+            initGame(id);
+        } catch (e) {
+            alert("Error: Check JSON syntax for Vitals and Labs fields.");
+        }
+    }
+
+    function cancelBuilder() {
+        document.getElementById('builder-view').classList.add('hidden');
+        document.getElementById('launcher').classList.remove('hidden');
+    }
+
+    function triggerImport() { document.getElementById('import-file').click(); }
+
+    function handleImport(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const imported = JSON.parse(event.target.result);
+                const id = 'import_' + Date.now();
+                scenarios[id] = imported;
+                initLauncher();
+            } catch(err) { alert("Invalid JSON format."); }
+        };
+        reader.readAsText(file);
+    }
+
+    function exportCurrentCase() {
+        try {
+            const fileName = state.case.name.replace(/\s+/g, '_') + ".json";
+            const json = JSON.stringify(state.case, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(link);
+        } catch (err) { alert("Export failed."); }
+    }
+
+    window.onload = initLauncher;
+</script>
+
+</body>
+</html>
