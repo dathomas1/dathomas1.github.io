@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Learn about Hometown Rentals of Central Florida — built on 40+ years of property management experience in Highlands County. Local, trusted, community-committed.">
+  <title>About Us | Hometown Rentals of Central Florida</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* About-page extras */
+    .timeline {
+      position: relative;
+      padding-left: 2.5rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      background: var(--gradient-warm);
+      border-radius: 2px;
+    }
+    .timeline-item {
+      position: relative;
+      padding: 0 0 var(--space-8) var(--space-8);
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: calc(-2.5rem + 0px);
+      top: 6px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--color-orange);
+      border: 3px solid white;
+      box-shadow: 0 0 0 2px var(--color-orange);
+    }
+    .timeline-item__year {
+      font-size: var(--text-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-orange);
+      margin-bottom: var(--space-2);
+    }
+    .timeline-item h4 { margin-bottom: var(--space-2); }
+    .timeline-item p { font-size: var(--text-sm); color: var(--color-mid); }
+
+    .diff-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-6);
+    }
+    .diff-item {
+      display: flex;
+      gap: var(--space-4);
+      padding: var(--space-6);
+      background: var(--color-white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      align-items: flex-start;
+    }
+    .diff-item__num {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--color-border);
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .diff-item h4 { margin-bottom: var(--space-2); font-size: 1rem; }
+    .diff-item p { font-size: var(--text-sm); color: var(--color-mid); }
+
+    @media (max-width: 768px) {
+      .diff-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================== NAV ===================== -->
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo" aria-label="Hometown Rentals Home">
+        <svg class="nav__logo-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="44" height="44" rx="10" fill="#B71C1C"/>
+          <path d="M22 8L8 20h4v16h8V28h4v8h8V20h4L22 8z" fill="white"/>
+          <rect x="18" y="28" width="8" height="8" rx="1" fill="#E65100"/>
+        </svg>
+        <div class="nav__logo-text">
+          <span class="nav__logo-name">Hometown Rentals</span>
+          <span class="nav__logo-sub">of Central Florida LLC</span>
+        </div>
+      </a>
+      <ul class="nav__links">
+        <li><a href="index.html" class="nav__link">Home</a></li>
+        <li><a href="about.html" class="nav__link">About</a></li>
+        <li><a href="listings.html" class="nav__link">Properties</a></li>
+      </ul>
+      <a href="#contact" class="btn btn-primary nav__cta">Contact Us</a>
+      <button class="nav__hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Nav -->
+  <div class="nav__mobile">
+    <a href="index.html" class="nav__link">Home</a>
+    <a href="about.html" class="nav__link">About</a>
+    <a href="listings.html" class="nav__link">Properties</a>
+    <a href="#contact" class="btn btn-primary">Contact Us</a>
+  </div>
+
+  <!-- ===================== PAGE HERO ===================== -->
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Our Story</p>
+      <h1>Local Experience.<br>Dependable Results.</h1>
+      <p>Hometown Rentals of Central Florida was built on a simple belief: that property management should feel personal, transparent, and trustworthy — every single time.</p>
+    </div>
+  </section>
+
+  <!-- ===================== STATS ===================== -->
+  <section class="section--sm" style="background: var(--color-white); padding-top: var(--space-12); padding-bottom: var(--space-12);">
+    <div class="container">
+      <div class="stat-grid">
+        <div class="stat-card fade-up">
+          <div class="stat-card__num">40+</div>
+          <div class="stat-card__label">Years of Property Management Experience</div>
+        </div>
+        <div class="stat-card fade-up">
+          <div class="stat-card__num">100%</div>
+          <div class="stat-card__label">Commitment to Client Satisfaction</div>
+        </div>
+        <div class="stat-card fade-up">
+          <div class="stat-card__num">FL</div>
+          <div class="stat-card__label">Licensed & Compliant in Florida</div>
+        </div>
+        <div class="stat-card fade-up">
+          <div class="stat-card__num">2026</div>
+          <div class="stat-card__label">Established January 5th — Built to Last</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== STORY / SPLIT ===================== -->
+  <section class="section section--cream">
+    <div class="container">
+      <div class="split">
+        <div class="split__content fade-up">
+          <p class="eyebrow">Who We Are</p>
+          <h2>A New Company With Deep Roots</h2>
+          <p class="lead">Hometown Rentals of Central Florida LLC was officially established on January 5th, 2026 — but the experience behind it goes back over four decades.</p>
+          <p style="color: var(--color-mid); margin-bottom: var(--space-5);">Our founder spent 40+ years in the trenches of property management throughout Highlands County, learning every facet of the business: what makes a great tenant, how to keep properties profitable, what owners really need, and how to build lasting trust with the communities we serve.</p>
+          <p style="color: var(--color-mid);">When we launched Hometown Rentals, we brought all of that knowledge together with a fresh vision: a modern, client-first property management firm that feels genuinely local — because it is. We're not a franchise. We're not a call center. We're your neighbors, and we take that seriously.</p>
+        </div>
+        <div class="split__img fade-up">
+          <img
+            src="https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=900&auto=format&fit=crop&q=80"
+            alt="Friendly property management team in Central Florida"
+            loading="lazy"
+          >
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TIMELINE ===================== -->
+  <section class="section">
+    <div class="container">
+      <div class="split split--reverse">
+        <div class="split__content fade-up">
+          <p class="eyebrow">Our Journey</p>
+          <h2>Decades of Experience, One Clear Mission</h2>
+          <p style="color: var(--color-mid); margin-bottom: var(--space-8);">The story of Hometown Rentals didn't begin in 2026 — it began decades earlier, built one property at a time, one relationship at a time.</p>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-item__year">40+ Years Ago</div>
+              <h4>A Career Built on Property Management</h4>
+              <p>Our founder began managing properties throughout Highlands County, learning the market from the ground up.</p>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-item__year">Over the Decades</div>
+              <h4>Growing Expertise &amp; Community Trust</h4>
+              <p>Managed hundreds of units, built relationships with local vendors, and developed systems that protect owner investments.</p>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-item__year">January 5, 2026</div>
+              <h4>Hometown Rentals LLC is Founded</h4>
+              <p>All that experience formalized into a dedicated local company — bringing modern service to Central Florida property owners and renters.</p>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-item__year">Today</div>
+              <h4>Serving &amp; Growing Central Florida</h4>
+              <p>Expanding our portfolio while holding firm to our core values: integrity, responsiveness, and results.</p>
+            </div>
+          </div>
+        </div>
+        <div class="split__img fade-up">
+          <img
+            src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&auto=format&fit=crop&q=80"
+            alt="Central Florida homes and community"
+            loading="lazy"
+          >
+          <div class="split__img-badge">
+            <div class="split__img-badge-num">Est. '26</div>
+            <div class="split__img-badge-label">Highlands County Roots</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MISSION ===================== -->
+  <section class="section section--brand">
+    <div class="container">
+      <div style="max-width: 760px; margin: 0 auto; text-align: center;">
+        <p class="eyebrow" style="color: var(--color-orange-light);">Our Mission</p>
+        <h2 style="color: white; margin-bottom: var(--space-6);">"Serving our community with care, trust, and dependable rental solutions."</h2>
+        <p style="color: rgba(255,255,255,0.82); font-size: 1.1rem; line-height: 1.8;">We believe every property owner deserves peace of mind, every tenant deserves a quality home, and every community deserves businesses that actually invest in its well-being. That's not a tagline — it's why we show up every day.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== WHAT MAKES US DIFFERENT ===================== -->
+  <section class="section section--light">
+    <div class="container">
+      <div class="section-header centered fade-up">
+        <p class="eyebrow">What Sets Us Apart</p>
+        <h2>Why Owners &amp; Renters Choose Hometown Rentals</h2>
+      </div>
+      <div class="diff-grid">
+        <div class="diff-item fade-up">
+          <div class="diff-item__num">01</div>
+          <div>
+            <h4>We Know This Market</h4>
+            <p>40+ years in Highlands County means we know what rents for what, which neighborhoods are rising, and how to position your property to attract the best tenants.</p>
+          </div>
+        </div>
+        <div class="diff-item fade-up">
+          <div class="diff-item__num">02</div>
+          <div>
+            <h4>No Surprises. Ever.</h4>
+            <p>Detailed monthly financial reports, proactive communication, and full transparency on every decision. You'll always know exactly what's happening with your property.</p>
+          </div>
+        </div>
+        <div class="diff-item fade-up">
+          <div class="diff-item__num">03</div>
+          <div>
+            <h4>Rigorous Tenant Screening</h4>
+            <p>We check credit, background, and rental history for every applicant. We don't cut corners because your property deserves tenants who treat it with respect.</p>
+          </div>
+        </div>
+        <div class="diff-item fade-up">
+          <div class="diff-item__num">04</div>
+          <div>
+            <h4>Full Legal Compliance</h4>
+            <p>Florida landlord-tenant law is complex. We stay current on all state and federal regulations so you're always protected — legally and financially.</p>
+          </div>
+        </div>
+        <div class="diff-item fade-up">
+          <div class="diff-item__num">05</div>
+          <div>
+            <h4>Proactive Maintenance</h4>
+            <p>We catch small problems before they become expensive ones. Our network of trusted local vendors means fast, fairly-priced repairs every time.</p>
+          </div>
+        </div>
+        <div class="diff-item fade-up">
+          <div class="diff-item__num">06</div>
+          <div>
+            <h4>Real People, Real Care</h4>
+            <p>We're a local business, not a call center. When you reach out, you reach a real person who knows your property and is invested in your success.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== VALUES ===================== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header centered fade-up">
+        <p class="eyebrow">Our Core Values</p>
+        <h2>The Principles We Manage By</h2>
+      </div>
+      <div class="values-grid">
+        <div class="value-card fade-up">
+          <h3>Integrity</h3>
+          <p>We do what we say and say what we mean. Every report, every decision, every dollar — handled with complete honesty.</p>
+        </div>
+        <div class="value-card fade-up">
+          <h3>Responsiveness</h3>
+          <p>Owners and tenants alike deserve timely answers. We don't let important issues sit — we address them quickly and clearly.</p>
+        </div>
+        <div class="value-card fade-up">
+          <h3>Community</h3>
+          <p>We're not just managing properties — we're helping build the neighborhoods where people live, raise families, and build lives.</p>
+        </div>
+        <div class="value-card fade-up">
+          <h3>Results</h3>
+          <p>At the end of the day, what matters is that your investment performs. We focus on outcomes, not just activity.</p>
+        </div>
+        <div class="value-card fade-up">
+          <h3>Care</h3>
+          <p>From the tenant who needs a repair to the owner reviewing their monthly statement — every person we serve deserves genuine care.</p>
+        </div>
+        <div class="value-card fade-up">
+          <h3>Dependability</h3>
+          <p>You can count on us to show up, follow through, and keep your property running smoothly — month after month, year after year.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CONTACT SECTION ===================== -->
+  <section class="section section--cream" id="contact">
+    <div class="container">
+      <div class="split">
+        <div class="split__content fade-up">
+          <p class="eyebrow">Get in Touch</p>
+          <h2>Let's Talk About Your Property</h2>
+          <p class="lead">Ready to hand off the hassle and start enjoying your investment? Or looking for a great rental home? We'd love to hear from you.</p>
+          <div class="feature-list" style="margin-top: var(--space-8);">
+            <div class="feature-item">
+              <div class="feature-item__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="feature-item__text">
+                <h4>Free Initial Consultation</h4>
+                <p>No cost, no commitment. Just an honest conversation about how we can help.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-item__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="feature-item__text">
+                <h4>Fast Response</h4>
+                <p>We respond to all inquiries within one business day.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-item__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="feature-item__text">
+                <h4>Serving All of Central Florida</h4>
+                <p>Highlands County and surrounding Central Florida communities.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fade-up">
+          <form class="contact-form" data-form="contact">
+            <div class="form-group">
+              <label for="name">Your Name</label>
+              <input type="text" id="name" name="name" placeholder="Jane Smith" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" placeholder="jane@email.com" required>
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone" placeholder="(863) 555-0100">
+            </div>
+            <div class="form-group">
+              <label for="interest">I'm interested in…</label>
+              <select id="interest" name="interest">
+                <option value="">Select an option</option>
+                <option value="owner">Property Management (I'm an owner)</option>
+                <option value="renter">Finding a Rental Home</option>
+                <option value="general">General Inquiry</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" placeholder="Tell us a bit about your situation or what you're looking for…"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn--lg" style="align-self: flex-start; width: 100%;">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CTA BANNER ===================== -->
+  <div class="cta-banner">
+    <div class="container cta-banner__inner">
+      <h2>Ready to See Available Properties?</h2>
+      <p>Browse our current rental listings across Central Florida — quality homes, fair prices, responsive management.</p>
+      <div class="cta-banner__actions">
+        <a href="listings.html" class="btn btn-primary btn--lg">View All Listings</a>
+        <a href="#contact" class="btn btn-outline btn--lg">Request a Consultation</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div class="footer__brand">
+          <a href="index.html" class="nav__logo">
+            <svg class="nav__logo-icon" viewBox="0 0 44 44" fill="none">
+              <rect width="44" height="44" rx="10" fill="#E65100"/>
+              <path d="M22 8L8 20h4v16h8V28h4v8h8V20h4L22 8z" fill="white"/>
+              <rect x="18" y="28" width="8" height="8" rx="1" fill="#B71C1C"/>
+            </svg>
+            <div class="nav__logo-text">
+              <span class="nav__logo-name">Hometown Rentals</span>
+              <span class="nav__logo-sub">of Central Florida LLC</span>
+            </div>
+          </a>
+          <p>Local experience. Dependable results. Serving homes, tenants, and communities across Central Florida with care, trust, and integrity since 2026.</p>
+          <div class="footer__socials">
+            <a href="#" class="footer__social" aria-label="Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            </a>
+            <a href="#" class="footer__social" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            </a>
+            <a href="#" class="footer__social" aria-label="Google">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.35 11.1H12.18v2.9h5.3c-.24 1.38-1.43 4.05-5.3 4.05-3.19 0-5.8-2.64-5.8-5.9s2.61-5.9 5.8-5.9c1.82 0 3.04.78 3.74 1.44l2.55-2.46C16.8 3.71 14.68 2.8 12.18 2.8 6.83 2.8 2.5 7.13 2.5 12.15S6.83 21.5 12.18 21.5c5.08 0 8.46-3.57 8.46-8.6 0-.58-.06-1.02-.14-1.48l-.15-.32z"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer__col">
+          <h4>Quick Links</h4>
+          <ul class="footer__links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="listings.html">Available Properties</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer__col">
+          <h4>Services</h4>
+          <ul class="footer__links">
+            <li><a href="about.html">Property Management</a></li>
+            <li><a href="listings.html">Rental Listings</a></li>
+            <li><a href="about.html">Tenant Screening</a></li>
+            <li><a href="about.html">Maintenance</a></li>
+          </ul>
+        </div>
+        <div class="footer__col">
+          <h4>Contact Us</h4>
+          <div class="footer__contact">
+            <div class="footer__contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Proudly Serving Central Florida
+            </div>
+            <div class="footer__contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.63A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg>
+              [PHONE NUMBER]
+            </div>
+            <div class="footer__contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              [EMAIL ADDRESS]
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer__bar">
+        <p>&copy; 2026 Hometown Rentals of Central Florida LLC. All rights reserved. Est. January 5, 2026.</p>
+        <p>Local. Trusted. Committed to Our Community.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
+</body>
+</html>

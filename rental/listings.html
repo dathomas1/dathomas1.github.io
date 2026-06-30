@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse available rental homes and properties across Central Florida. Quality homes managed by Hometown Rentals of Central Florida — your trusted local property manager.">
+  <title>Home Rentals Central Florida | Hometown Rentals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .apply-form-section {
+      background: var(--color-cream);
+    }
+    .apply-box {
+      background: var(--color-white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      padding: var(--space-10);
+      display: flex;
+      gap: var(--space-10);
+      align-items: center;
+    }
+    .apply-box__text { flex: 1; }
+    .apply-box__text h3 { margin-bottom: var(--space-3); }
+    .apply-box__text p { color: var(--color-mid); margin-bottom: var(--space-6); }
+    .apply-box__img {
+      flex: 0 0 200px;
+      height: 200px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .apply-box__img img { width: 100%; height: 100%; object-fit: cover; }
+
+    @media (max-width: 768px) {
+      .apply-box { flex-direction: column; }
+      .apply-box__img { width: 100%; flex: none; }
+    }
+
+    .no-results {
+      text-align: center;
+      padding: var(--space-16);
+      color: var(--color-muted);
+      grid-column: 1 / -1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================== NAV ===================== -->
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo" aria-label="Hometown Rentals Home">
+        <svg class="nav__logo-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="44" height="44" rx="10" fill="#B71C1C"/>
+          <path d="M22 8L8 20h4v16h8V28h4v8h8V20h4L22 8z" fill="white"/>
+          <rect x="18" y="28" width="8" height="8" rx="1" fill="#E65100"/>
+        </svg>
+        <div class="nav__logo-text">
+          <span class="nav__logo-name">Hometown Rentals</span>
+          <span class="nav__logo-sub">of Central Florida LLC</span>
+        </div>
+      </a>
+      <ul class="nav__links">
+        <li><a href="index.html" class="nav__link">Home</a></li>
+        <li><a href="about.html" class="nav__link">About</a></li>
+        <li><a href="listings.html" class="nav__link">Properties</a></li>
+      </ul>
+      <a href="about.html#contact" class="btn btn-primary nav__cta">Contact Us</a>
+      <button class="nav__hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Nav -->
+  <div class="nav__mobile">
+    <a href="index.html" class="nav__link">Home</a>
+    <a href="about.html" class="nav__link">About</a>
+    <a href="listings.html" class="nav__link">Properties</a>
+    <a href="about.html#contact" class="btn btn-primary">Contact Us</a>
+  </div>
+
+  <!-- ===================== PAGE HERO ===================== -->
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Available Rentals</p>
+      <h1>Find Your Next Home in Central Florida</h1>
+      <p>Quality rental properties managed by people who genuinely care. Browse our current listings and apply with confidence.</p>
+    </div>
+  </section>
+
+  <!-- ===================== RENTER TRUST STRIP ===================== -->
+  <div class="trust-strip">
+    <div class="container">
+      <div class="trust-strip__inner">
+        <div class="trust-item">
+          <svg class="trust-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1V10"/></svg>
+          Quality Homes You Can Trust
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+          <svg class="trust-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+          Responsive, Caring Service
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+          <svg class="trust-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          Easy Communication
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+          <svg class="trust-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          Fair &amp; Transparent
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== LISTINGS ===================== -->
+  <section class="section">
+    <div class="container">
+      <!-- Filters -->
+      <div class="listings-filter">
+        <button class="filter-btn active" data-filter="all">All Properties</button>
+        <button class="filter-btn" data-filter="house">Houses</button>
+        <button class="filter-btn" data-filter="apartment">Apartments</button>
+        <button class="filter-btn" data-filter="townhome">Townhomes</button>
+      </div>
+
+      <!-- Listing Grid -->
+      <div class="listings-grid">
+
+        <!-- Listing 1 -->
+        <div class="listing-card fade-up" data-type="house">
+          <div class="listing-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=700&auto=format&fit=crop&q=75" alt="3-bedroom home in Sebring FL" loading="lazy">
+            <span class="listing-card__badge">Available Now</span>
+          </div>
+          <div class="listing-card__body">
+            <div class="listing-card__price">$1,450<span>/mo</span></div>
+            <div class="listing-card__address">
+              <svg style="display:inline;width:14px;height:14px;vertical-align:middle;margin-right:4px;color:var(--color-orange)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Sebring, FL — Highlands County
+            </div>
+            <div class="listing-card__features">
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1V10"/></svg>
+                3 Bed
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M4 6h16M4 18h16"/></svg>
+                2 Bath
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                1,450 sq ft
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                Garage
+              </div>
+            </div>
+            <a href="about.html#contact" class="btn btn-primary">Schedule a Tour</a>
+          </div>
+        </div>
+
+        <!-- Listing 2 -->
+        <div class="listing-card fade-up" data-type="house">
+          <div class="listing-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&auto=format&fit=crop&q=75" alt="4-bedroom home Central Florida" loading="lazy">
+            <span class="listing-card__badge">Available Now</span>
+          </div>
+          <div class="listing-card__body">
+            <div class="listing-card__price">$1,895<span>/mo</span></div>
+            <div class="listing-card__address">
+              <svg style="display:inline;width:14px;height:14px;vertical-align:middle;margin-right:4px;color:var(--color-orange)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Avon Park, FL — Highlands County
+            </div>
+            <div class="listing-card__features">
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1V10"/></svg>
+                4 Bed
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M4 6h16M4 18h16"/></svg>
+                2 Bath
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                1,820 sq ft
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 00-3 3v12a3 3 0 003 3 3 3 0 003-3 3 3 0 00-3-3H6a3 3 0 00-3 3 3 3 0 003 3 3 3 0 003-3V6a3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3h12a3 3 0 003-3 3 3 0 00-3-3z"/></svg>
+                Pet Friendly
+              </div>
+            </div>
+            <a href="about.html#contact" class="btn btn-primary">Schedule a Tour</a>
+          </div>
+        </div>
+
+        <!-- Listing 3 -->
+        <div class="listing-card fade-up" data-type="apartment">
+          <div class="listing-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=700&auto=format&fit=crop&q=75" alt="Modern apartment Central Florida" loading="lazy">
+            <span class="listing-card__badge">Available Now</span>
+          </div>
+          <div class="listing-card__body">
+            <div class="listing-card__price">$975<span>/mo</span></div>
+            <div class="listing-card__address">
+              <svg style="display:inline;width:14px;height:14px;vertical-align:middle;margin-right:4px;color:var(--color-orange)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Sebring, FL — Highlands County
+            </div>
+            <div class="listing-card__features">
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1V10"/></svg>
+                2 Bed
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M4 6h16M4 18h16"/></svg>
+                1 Bath
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                920 sq ft
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 7 13 17 8 12 1 19"/><polyline points="17 7 23 7 23 13"/></svg>
+                Updated
+              </div>
+            </div>
+            <a href="about.html#contact" class="btn btn-primary">Schedule a Tour</a>
+          </div>
+        </div>
+
+        <!-- Listing 4 -->
+        <div class="listing-card fade-up" data-type="townhome">
+          <div class="listing-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=700&auto=format&fit=crop&q=75" alt="Townhome rental Central Florida" loading="lazy">
+            <span class="listing-card__badge" style="background: #2e7d32;">Coming Soon</span>
+          </div>
+          <div class="listing-card__body">
+            <div class="listing-card__price">$1,350<span>/mo</span></div>
+            <div class="listing-card__address">
+              <svg style="display:inline;width:14px;height:14px;vertical-align:middle;margin-right:4px;color:var(--color-orange)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Lake Placid, FL — Highlands County
+            </div>
+            <div class="listing-card__features">
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1V10"/></svg>
+                3 Bed
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M4 6h16M4 18h16"/></svg>
+                2.5 Bath
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                1,380 sq ft
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                2 Stories
+              </div>
+            </div>
+            <a href="about.html#contact" class="btn btn-secondary">Join Waitlist</a>
+          </div>
+        </div>
+
+        <!-- Listing 5 -->
+        <div class="listing-card fade-up" data-type="house">
+          <div class="listing-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=700&auto=format&fit=crop&q=75" alt="Single family home Central Florida" loading="lazy">
+            <span class="listing-card__badge">Available Now</span>
+          </div>
+          <div class="listing-card__body">
+            <div class="listing-card__price">$1,650<span>/mo</span></div>
+            <div class="listing-card__address">
+              <svg style="display:inline;width:14px;height:14px;vertical-align:middle;margin-right:4px;color:var(--color-orange)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Sebring, FL — Highlands County
+            </div>
+            <div class="listing-card__features">
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1V10"/></svg>
+                3 Bed
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M4 6h16M4 18h16"/></svg>
+                2 Bath
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                1,600 sq ft
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 0v20M2 12h20"/></svg>
+                Large Yard
+              </div>
+            </div>
+            <a href="about.html#contact" class="btn btn-primary">Schedule a Tour</a>
+          </div>
+        </div>
+
+        <!-- Listing 6 -->
+        <div class="listing-card fade-up" data-type="apartment">
+          <div class="listing-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=700&auto=format&fit=crop&q=75" alt="1-bedroom apartment Sebring FL" loading="lazy">
+            <span class="listing-card__badge">Available Now</span>
+          </div>
+          <div class="listing-card__body">
+            <div class="listing-card__price">$795<span>/mo</span></div>
+            <div class="listing-card__address">
+              <svg style="display:inline;width:14px;height:14px;vertical-align:middle;margin-right:4px;color:var(--color-orange)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Avon Park, FL — Highlands County
+            </div>
+            <div class="listing-card__features">
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1V10"/></svg>
+                1 Bed
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M4 6h16M4 18h16"/></svg>
+                1 Bath
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                650 sq ft
+              </div>
+              <div class="listing-feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                Utilities Incl.
+              </div>
+            </div>
+            <a href="about.html#contact" class="btn btn-primary">Schedule a Tour</a>
+          </div>
+        </div>
+
+      </div><!-- end listings-grid -->
+
+      <!-- No results fallback (hidden by default) -->
+      <p class="no-results" id="no-results" style="display:none;">No properties match your filter. <a href="#" onclick="document.querySelector('[data-filter=all]').click(); return false;" style="color:var(--color-orange)">View all listings</a></p>
+    </div>
+  </section>
+
+  <!-- ===================== HOW TO APPLY ===================== -->
+  <section class="section apply-form-section">
+    <div class="container">
+      <div class="section-header centered fade-up">
+        <p class="eyebrow">Renter Resources</p>
+        <h2>How to Apply for a Rental</h2>
+        <p>We've made the application process as simple and transparent as possible. Here's what to expect.</p>
+      </div>
+      <div class="steps" style="margin-bottom: var(--space-12);">
+        <div class="step fade-up">
+          <div class="step__num">1</div>
+          <h4>Find Your Home</h4>
+          <p>Browse the listings above and click "Schedule a Tour" on any property that interests you.</p>
+        </div>
+        <div class="step fade-up">
+          <div class="step__num">2</div>
+          <h4>Tour the Property</h4>
+          <p>We'll schedule a convenient time for you to see the home in person.</p>
+        </div>
+        <div class="step fade-up">
+          <div class="step__num">3</div>
+          <h4>Submit Your Application</h4>
+          <p>Complete our application with ID, proof of income, and references. We process quickly.</p>
+        </div>
+        <div class="step fade-up">
+          <div class="step__num">4</div>
+          <h4>Sign &amp; Move In</h4>
+          <p>Once approved, sign your lease and pick up your keys. Welcome home!</p>
+        </div>
+      </div>
+      <div class="apply-box fade-up">
+        <div class="apply-box__text">
+          <p class="eyebrow">Ready to Apply?</p>
+          <h3>Contact Us About Any Listing</h3>
+          <p>Have a question about a property or want to schedule a tour? Reach out and our team will get back to you within one business day.</p>
+          <a href="about.html#contact" class="btn btn-primary btn--lg">Get in Touch</a>
+        </div>
+        <div class="apply-box__img">
+          <img src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=400&auto=format&fit=crop&q=75" alt="Happy renters in their Central Florida home" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== OWNER CTA ===================== -->
+  <div class="cta-banner">
+    <div class="container cta-banner__inner">
+      <h2>Are You a Property Owner?</h2>
+      <p>Let us handle the details. From listing and screening to maintenance and rent collection — we protect your investment so you don't have to.</p>
+      <div class="cta-banner__actions">
+        <a href="about.html#contact" class="btn btn-primary btn--lg">Schedule a Free Consultation</a>
+        <a href="about.html" class="btn btn-outline btn--lg">Learn About Our Services</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div class="footer__brand">
+          <a href="index.html" class="nav__logo">
+            <svg class="nav__logo-icon" viewBox="0 0 44 44" fill="none">
+              <rect width="44" height="44" rx="10" fill="#E65100"/>
+              <path d="M22 8L8 20h4v16h8V28h4v8h8V20h4L22 8z" fill="white"/>
+              <rect x="18" y="28" width="8" height="8" rx="1" fill="#B71C1C"/>
+            </svg>
+            <div class="nav__logo-text">
+              <span class="nav__logo-name">Hometown Rentals</span>
+              <span class="nav__logo-sub">of Central Florida LLC</span>
+            </div>
+          </a>
+          <p>Local experience. Dependable results. Serving homes, tenants, and communities across Central Florida with care, trust, and integrity since 2026.</p>
+          <div class="footer__socials">
+            <a href="#" class="footer__social" aria-label="Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            </a>
+            <a href="#" class="footer__social" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            </a>
+            <a href="#" class="footer__social" aria-label="Google">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.35 11.1H12.18v2.9h5.3c-.24 1.38-1.43 4.05-5.3 4.05-3.19 0-5.8-2.64-5.8-5.9s2.61-5.9 5.8-5.9c1.82 0 3.04.78 3.74 1.44l2.55-2.46C16.8 3.71 14.68 2.8 12.18 2.8 6.83 2.8 2.5 7.13 2.5 12.15S6.83 21.5 12.18 21.5c5.08 0 8.46-3.57 8.46-8.6 0-.58-.06-1.02-.14-1.48l-.15-.32z"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer__col">
+          <h4>Quick Links</h4>
+          <ul class="footer__links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="listings.html">Available Properties</a></li>
+            <li><a href="about.html#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer__col">
+          <h4>Services</h4>
+          <ul class="footer__links">
+            <li><a href="about.html">Property Management</a></li>
+            <li><a href="listings.html">Rental Listings</a></li>
+            <li><a href="about.html">Tenant Screening</a></li>
+            <li><a href="about.html">Maintenance</a></li>
+          </ul>
+        </div>
+        <div class="footer__col">
+          <h4>Contact Us</h4>
+          <div class="footer__contact">
+            <div class="footer__contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Proudly Serving Central Florida
+            </div>
+            <div class="footer__contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.63A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg>
+              [PHONE NUMBER]
+            </div>
+            <div class="footer__contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              [EMAIL ADDRESS]
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer__bar">
+        <p>&copy; 2026 Hometown Rentals of Central Florida LLC. All rights reserved. Est. January 5, 2026.</p>
+        <p>Local. Trusted. Committed to Our Community.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
+</body>
+</html>
