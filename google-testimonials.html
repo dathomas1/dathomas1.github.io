@@ -1,0 +1,127 @@
+<html lang="en">
+<head></head>
+<body>
+<!-- 1. The Testimonial Grid Container -->
+<div id="testimonial-listings-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; font-family: sans-serif; background-color: #f9f9f9; padding: 20px;">
+  <!-- Component elements inject cleanly here -->
+</div>
+
+<!-- 3. Safe Stream Parsing and Sync Logic -->
+<script>
+const SHEET_ID = '1n3PSAdvrwFjCCwCfmKGR_k2b3aUzhR9-3Zvvu7fBIJU';
+const TAB_NAME = '💬 Testimonial Template';
+// const CSV_URL = `https://google.com/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(TAB_NAME)}`;
+const CSV_URL = `https://docs.google.com/spreadsheets/d/1n3PSAdvrwFjCCwCfmKGR_k2b3aUzhR9-3Zvvu7fBIJU/export?format=csv&gid=2042968377`;
+
+// Robust RFC-4180 Compliant Stream CSV Parser
+function parseCSV(text) {
+  let lines = [];
+  let row = [''];
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    let current = text[i];
+    let next = text[i + 1];
+
+    if (current === '"') {
+      if (inQuotes && next === '"') {
+        row[row.length - 1] += '"'; // Handle escaped internal double quotes cleanly
+        i++; 
+      } else {
+        inQuotes = !inQuotes; // Toggle quotes segment marker
+      }
+    } else if (current === ',' && !inQuotes) {
+      row.push(''); // Move to next column
+    } else if ((current === '\r' || current === '\n') && !inQuotes) {
+      if (current === '\r' && next === '\n') { i++; } // Skip double characters
+      lines.push(row);
+      row = [''];
+    } else {
+      row[row.length - 1] += current;
+    }
+  }
+  if (row.length > 1 || row[0] !== '') { lines.push(row); }
+  return lines;
+}
+
+async function fetchTestimonials() {
+  try {
+    const response = await fetch(CSV_URL);
+    const rawData = await response.text();
+    
+    // Parse using our bulletproof stream engine instead of a shaky regex split
+    const rows = parseCSV(rawData);
+    
+    const gridContainer = document.getElementById('testimonial-listings-grid');
+    gridContainer.innerHTML = ''; 
+    
+    // Process starting at index 1 to bypass spreadsheet title blocks cleanly
+    for (let i = 1; i < rows.length; i++) {
+      const currentRow = rows[i];
+      if (!currentRow || currentRow.length < 6) continue; // Ensure the record array has required depth
+      
+      const status      = currentRow[0] ? currentRow[0].trim() : ''; // Column A
+      const cleanQuote  = currentRow[1] ? currentRow[1].trim() : ''; // Column B
+      const cleanName   = currentRow[2] ? currentRow[2].trim() : 'Anonymous'; // Column C
+      const rawPhotoUrl = currentRow[3] ? currentRow[3].trim() : ''; // Column D
+      const cleanRating = currentRow[5] ? currentRow[5].trim() : '★★★★★'; // Column F
+
+      // Safe State Check: Stop instantly if row status field isn't verified Active
+      if (status !== 'Active') continue;
+
+      // Cleanly map Google Drive image identifiers into real direct source streams
+      let finalAvatarImage = 'https://placeholder.com';
+      if (rawPhotoUrl) {
+        if (rawPhotoUrl.includes('://google.com')) {
+          const fileIdMatch = rawPhotoUrl.match(/id=([^&]+)/);
+          if (fileIdMatch && fileIdMatch[1]) {
+            finalAvatarImage = `https://googleusercontent.com{fileIdMatch[1]}`;
+          }
+        } else if (rawPhotoUrl.startsWith('http')) {
+          finalAvatarImage = rawPhotoUrl;
+        }
+      }
+
+      // Generate Clean DOM Grid Cards
+      const card = document.createElement('div');
+      card.style = "border: 1px solid #e2e8f0; border-radius: 10px; padding: 24px; background: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;";
+      card.innerHTML = `
+        <div>
+          <div style="color: #ffc107; font-size: 18px; margin-bottom: 12px;">${cleanRating}</div>
+          <p style="color: #4a5568; font-style: italic; line-height: 1.6; margin: 0 0 20px 0; font-size: 15px;">"${cleanQuote}"</p>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: auto; border-top: 1px solid #edf2f7; padding-top: 15px;">
+          <div style="display: flex; align-items: center;">
+            <img src="${finalAvatarImage}" alt="${cleanName}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; margin-right: 12px; background: #eee;">
+            <strong style="color: #2d3748; font-size: 15px;">${cleanName}</strong>
+          </div>
+          <button onclick="openModal('${cleanName.replace(/'/g, "\\'")}')" style="background: #edf2f7; color: #4a5568; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Contact</button>
+        </div>
+      `;
+      gridContainer.appendChild(card);
+    }
+    
+    if (gridContainer.children.length === 0) {
+      gridContainer.innerHTML = '<p style="text-align:center; width:100%; color:#718096;">No active testimonials found.</p>';
+    }
+  } catch (error) {
+    console.error('Error fetching layout data:', error);
+    document.getElementById('testimonial-listings-grid').innerHTML = '<p style="color: red; text-align: center;">Error parsing data streams securely.</p>';
+  }
+}
+
+function openModal(name) {
+  document.getElementById('modal-property-title').innerText = name;
+  document.getElementById('form-property-id').value = name;
+  document.getElementById('contact-modal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('contact-modal').style.display = 'none';
+}
+
+// Boot up
+fetchTestimonials();
+</script>
+</body>
+</html>
